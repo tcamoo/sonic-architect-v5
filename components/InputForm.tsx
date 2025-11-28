@@ -38,11 +38,11 @@ const INSTRUMENT_DEPOT = {
 };
 
 const DEFAULT_STRUCTURE: StructureBlock[] = [
-  { id: '1', type: 'Intro', style: 'Atmospheric start', lyrics: '', duration: 15 },
-  { id: '2', type: 'Verse', style: 'Soft vocals', lyrics: '', duration: 30 },
-  { id: '3', type: 'Pre-Chorus', style: 'Building up', lyrics: '', duration: 15 },
-  { id: '4', type: 'Chorus', style: 'Powerful, Emotional', lyrics: '', duration: 25 },
-  { id: '5', type: 'Outro', style: 'Fading out', lyrics: '', duration: 20 },
+  { id: '1', type: 'Intro', style: 'Atmospheric start', instruments: '', lyrics: '', duration: 15 },
+  { id: '2', type: 'Verse', style: 'Soft vocals', instruments: 'Piano, Light Drums', lyrics: '', duration: 30 },
+  { id: '3', type: 'Pre-Chorus', style: 'Building up', instruments: '', lyrics: '', duration: 15 },
+  { id: '4', type: 'Chorus', style: 'Powerful, Emotional', instruments: 'Full Band, Strings', lyrics: '', duration: 25 },
+  { id: '5', type: 'Outro', style: 'Fading out', instruments: '', lyrics: '', duration: 20 },
 ];
 
 type Tab = 'inspiration' | 'arrangement';
