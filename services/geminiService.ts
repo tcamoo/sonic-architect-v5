@@ -55,8 +55,8 @@ ${ARTIST_KNOWLEDGE}
 2. **Lyrics (歌词栏 - 包含结构)**:
    - 如果用户提供了 "Structure Blocks" (积木结构)：
      - 你必须严格按照积木的顺序生成歌词。
-     - 将积木的 "Type", "Duration" (时长), "Style" (技术标签) 和 "Description" (自然语言描述) 融合。
-     - 示例标签: [Verse 1 (30s): Soft vocals, storytelling style]
+     - 将积木的 "Type", "Duration" (时长), "Style" (技术标签), "Instruments" (乐器) 和 "Description" (自然语言描述) 融合。
+     - 示例标签: [Verse 1 (30s): Soft vocals, Piano accomp]
      - 务必在方括号内标记估算的时长。
      - 如果用户设置了 BPM，请在歌词最上方添加 [BPM: 120] 标签。
    - **通用规则**:
@@ -138,6 +138,7 @@ export const generateSunoPrompt = async (request: SongRequest): Promise<Generate
       `Section: [${b.type}]
        Target Duration: ${b.duration} seconds
        Technical Tags: ${b.style}
+       Instruments: ${b.instruments || "None"}
        Narrative Description: ${b.description || "None"}
        Lyrics Content: ${b.lyrics || "(Generate lyrics based on theme or keep instrumental)"}`
     ).join("\n---\n");
