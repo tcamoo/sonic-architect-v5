@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sonic Architect V5 - AI Music Workbench. Optimized for Cloudflare deployment.">
+    <title>Sonic Architect - AI Music Workstation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              suno: {
+                dark: '#050505',
+                card: '#111111',
+                neonBlue: '#00f3ff',
+                neonPink: '#ff00ff',
+                neonGreen: '#00ff9d',
+                primary: '#f59e0b',
+              }
+            },
+            animation: {
+              'float': 'float 10s linear infinite',
+              'float-fast': 'float 7s linear infinite',
+              'spin-slow': 'spin 8s linear infinite',
+              'pulse-ring': 'pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite',
+              'fade-in': 'fadeIn 0.8s ease-out forwards',
+            },
+            keyframes: {
+              float: {
+                '0%': { transform: 'translateY(100vh) rotate(0deg) scale(0.8)', opacity: '0' },
+                '10%': { opacity: '0.6' },
+                '90%': { opacity: '0.6' },
+                '100%': { transform: 'translateY(-20vh) rotate(360deg) scale(1.2)', opacity: '0' },
+              },
+              'pulse-ring': {
+                '0%': { transform: 'scale(0.8)', opacity: '0.8' },
+                '80%, 100%': { transform: 'scale(2.5)', opacity: '0' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'scale(0.95)' },
+                '100%': { opacity: '1', transform: 'scale(1)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        background-color: #050505;
+        color: #ffffff;
+        overflow-x: hidden;
+      }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #0a0a0a; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+      
+      .music-note {
+        position: absolute;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        pointer-events: none;
+        z-index: 0;
+        font-weight: bold;
+      }
+      .text-shadow-neon {
+        text-shadow: 0 0 10px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

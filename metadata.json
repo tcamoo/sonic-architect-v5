@@ -1,0 +1,5 @@
+{
+  "name": "Sonic Architect",
+  "description": "专为 Suno v5/v4 设计的 AI 音乐提示词生成器，支持 JSON 提示词、首尾锚定与大师预设。",
+  "requestFramePermissions": []
+}
