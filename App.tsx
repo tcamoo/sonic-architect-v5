@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { ResultCard } from './components/ResultCard';
@@ -140,10 +141,11 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-grow max-w-[1800px] mx-auto w-full px-4 sm:px-6 py-8 flex flex-col lg:flex-row gap-8 lg:gap-12">
+      <main className="relative z-10 flex-grow max-w-[1800px] mx-auto w-full px-4 sm:px-6 py-8 flex flex-col lg:flex-row gap-4">
         
-        {/* Left Column */}
-        <div className={`w-full ${isWorkstationMode ? 'flex-1' : 'lg:w-[480px] lg:flex-shrink-0'} transition-all duration-500 ease-in-out space-y-6`}>
+        {/* Left Column (Workstation) */}
+        {/* MODIFIED: Width is now 80% when in workstation mode */}
+        <div className={`w-full ${isWorkstationMode ? 'lg:w-[80%]' : 'lg:w-[480px] lg:flex-shrink-0'} transition-all duration-500 ease-in-out space-y-6`}>
             <div className="space-y-2 mb-6 pl-2 border-l-4 border-suno-neonBlue/50">
                 <h2 className="text-4xl font-black text-white italic tracking-tighter neon-text">
                     MAKE IT <span className="text-transparent bg-clip-text bg-gradient-to-r from-suno-neonBlue to-suno-neonPink">REAL.</span>
@@ -166,21 +168,22 @@ const App: React.FC = () => {
             )}
         </div>
 
-        {/* Right Column */}
-        <div className={`${isWorkstationMode ? 'w-full lg:w-[400px] lg:flex-shrink-0' : 'flex-1'} lg:pl-12 lg:border-l border-white/5 pt-8 lg:pt-0 min-h-[600px] flex flex-col transition-all duration-500 ease-in-out`}>
+        {/* Right Column (Result & Visualization) */}
+        {/* MODIFIED: Width is now 20% when in workstation mode */}
+        <div className={`${isWorkstationMode ? 'lg:w-[20%] min-w-[280px]' : 'flex-1'} lg:pl-6 lg:border-l border-white/5 pt-8 lg:pt-0 min-h-[600px] flex flex-col transition-all duration-500 ease-in-out`}>
             
             {/* Idle State - Holographic Workstation Placeholder */}
             {status === GenerationStatus.IDLE && (
                 <div className="h-full flex flex-col items-center justify-center relative opacity-80 hover:opacity-100 transition-opacity duration-500">
                     {/* Holographic Circle */}
-                    <div className="relative w-64 h-64 flex items-center justify-center mb-8">
+                    <div className="relative w-48 h-48 flex items-center justify-center mb-8">
                         <div className="absolute inset-0 border border-suno-neonBlue/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
                         <div className="absolute inset-4 border border-dashed border-suno-neonBlue/30 rounded-full animate-[spin_20s_linear_infinite_reverse]"></div>
                         <div className="absolute inset-12 border border-suno-neonPink/20 rounded-full animate-pulse"></div>
                         
                         {/* Center Icon */}
-                        <div className="relative z-10 bg-black/50 p-6 rounded-full border border-white/10 backdrop-blur-sm shadow-[0_0_30px_rgba(0,243,255,0.1)]">
-                           <Activity className="w-12 h-12 text-suno-neonBlue animate-pulse" />
+                        <div className="relative z-10 bg-black/50 p-4 rounded-full border border-white/10 backdrop-blur-sm shadow-[0_0_30px_rgba(0,243,255,0.1)]">
+                           <Activity className="w-8 h-8 text-suno-neonBlue animate-pulse" />
                         </div>
                         
                         {/* Scanning Line */}
@@ -188,11 +191,9 @@ const App: React.FC = () => {
                     </div>
                     
                     <div className="text-center space-y-3">
-                        <h3 className="text-xl font-bold text-white tracking-[0.3em] uppercase">System Ready</h3>
-                        <div className="flex items-center justify-center space-x-2 text-[10px] font-mono text-suno-neonBlue/70">
-                            <span className="w-2 h-2 bg-suno-neonGreen rounded-full animate-pulse"></span>
+                        <h3 className="text-lg font-bold text-white tracking-[0.3em] uppercase">System Ready</h3>
+                        <div className="flex flex-col items-center justify-center space-y-1 text-[10px] font-mono text-suno-neonBlue/70">
                             <span>V5 ENGINE ONLINE</span>
-                            <span className="mx-2">|</span>
                             <span>WAITING FOR INPUT</span>
                         </div>
                     </div>
@@ -203,18 +204,13 @@ const App: React.FC = () => {
                 <div className="h-full flex flex-col items-center justify-center">
                     <div className="relative mb-12">
                         <div className="absolute inset-0 bg-suno-neonBlue/30 blur-2xl rounded-full animate-pulse"></div>
-                        <div className="w-32 h-32 border-4 border-white/5 border-t-suno-neonBlue border-b-suno-neonPink rounded-full animate-spin"></div>
+                        <div className="w-24 h-24 border-4 border-white/5 border-t-suno-neonBlue border-b-suno-neonPink rounded-full animate-spin"></div>
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-4xl">🎵</span>
+                            <span className="text-2xl">🎵</span>
                         </div>
                     </div>
-                    <h3 className="text-2xl font-black text-white mb-2 tracking-tighter">COMPOSING...</h3>
-                    <div className="flex space-x-2 mt-4">
-                        <div className="w-1 h-8 bg-suno-neonBlue rounded-full animate-[bounce_1s_infinite]"></div>
-                        <div className="w-1 h-8 bg-suno-neonPink rounded-full animate-[bounce_1s_infinite_0.1s]"></div>
-                        <div className="w-1 h-8 bg-suno-primary rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
-                    </div>
-                    <p className="text-xs text-suno-neonBlue mt-6 font-mono uppercase tracking-widest">Applying V5 Tags</p>
+                    <h3 className="text-xl font-black text-white mb-2 tracking-tighter">COMPOSING...</h3>
+                    <p className="text-[10px] text-suno-neonBlue mt-4 font-mono uppercase tracking-widest text-center">Applying V5 Tags &<br/>Structure Anchors</p>
                 </div>
             )}
 
@@ -228,7 +224,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="relative z-10 py-6 text-center text-[10px] text-gray-700 border-t border-white/5 bg-black/80 backdrop-blur-md uppercase tracking-widest">
         <div className="max-w-[1800px] mx-auto px-6 flex justify-between items-center">
-             <p>Sonic Architect V5.0 // Engineered for Audio</p>
+             <p>Sonic Architect V6.0 // Engineered for Audio</p>
              <div className="flex items-center space-x-2">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                 <p className="opacity-50">System Operational</p>
