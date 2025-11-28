@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { StructureBlock } from '../types';
 import { Button } from './Button';
-import { Trash2, Plus, Music, Settings, ChevronLeft, ChevronRight, Maximize2, Minimize2, LayoutTemplate, Sparkles, Wand2, FileText, Quote, Mic2, Tag, Zap, Guitar, Drum, Piano, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Trash2, Plus, Music, Settings, ChevronLeft, ChevronRight, Maximize2, Minimize2, LayoutTemplate, Sparkles, Wand2, FileText, Quote, Mic2, Tag, Zap, Guitar, Drum, Piano, ChevronDown, ChevronUp, Clock, ZoomIn, ZoomOut, Search, BoomBox, MousePointerClick, Volume2 } from 'lucide-react';
 
 interface StructureEditorProps {
   blocks: StructureBlock[];
@@ -13,8 +13,6 @@ interface StructureEditorProps {
   targetDuration: number;
   setTargetDuration: (val: number) => void;
 }
-
-const PIXELS_PER_SECOND = 4; // Scale factor for timeline
 
 // 1. Localized Block Types
 const BLOCK_TYPES = [
@@ -42,7 +40,68 @@ const SOLO_TECHNIQUES = [
   "和弦 (Chords)", "即兴 (Improvisation)", "高潮 (Drop)", "过门 (Fill)"
 ];
 
-// 3. Detailed Smart Library (Accordion)
+// 3. Instrument Presets for Quick Add
+// Expanded with Vocals and Emotions as requested
+const INSTRUMENT_PRESETS = {
+  chinese: [
+    { label: "古筝", value: "Guzheng" },
+    { label: "琵琶", value: "Pipa" },
+    { label: "二胡", value: "Erhu" },
+    { label: "笛子", value: "Dizi" },
+    { label: "唢呐", value: "Suona" },
+    { label: "古琴", value: "Guqin" },
+    { label: "马头琴", value: "Matouqin" },
+    { label: "编钟", value: "Chime Bells" },
+    { label: "大鼓", value: "Chinese Drum" },
+    { label: "萧", value: "Xiao" }
+  ],
+  pop: [
+    { label: "钢琴", value: "Piano" },
+    { label: "木吉他", value: "Acoustic Guitar" },
+    { label: "电吉他", value: "Electric Guitar" },
+    { label: "贝斯", value: "Bass" },
+    { label: "架子鼓", value: "Drum Kit" },
+    { label: "合成器", value: "Synthesizer" },
+    { label: "808", value: "808 Bass" },
+    { label: "鼓机", value: "Drum Machine" },
+    { label: "电钢琴", value: "Rhodes" },
+    { label: "放克贝斯", value: "Funky Bass" }
+  ],
+  classical: [
+    { label: "小提琴", value: "Violin" },
+    { label: "大提琴", value: "Cello" },
+    { label: "中提琴", value: "Viola" },
+    { label: "长笛", value: "Flute" },
+    { label: "单簧管", value: "Clarinet" },
+    { label: "小号", value: "Trumpet" },
+    { label: "竖琴", value: "Harp" },
+    { label: "定音鼓", value: "Timpani" },
+    { label: "管弦乐", value: "Orchestra" }
+  ],
+  vocals: [
+    { label: "男声", value: "Male Vocals" },
+    { label: "女声", value: "Female Vocals" },
+    { label: "对唱", value: "Duet" },
+    { label: "气声", value: "Breathy Vocals" },
+    { label: "沙哑", value: "Raspy Vocals" },
+    { label: "戏腔", value: "Chinese Opera Vocals" },
+    { label: "合唱", value: "Choir" },
+    { label: "耳语", value: "Whisper" },
+    { label: "高音", value: "High Pitch" }
+  ],
+  emotion: [
+    { label: "忧伤", value: "Melancholic" },
+    { label: "史诗", value: "Epic" },
+    { label: "空灵", value: "Ethereal" },
+    { label: "暗黑", value: "Dark" },
+    { label: "激进", value: "Aggressive" },
+    { label: "浪漫", value: "Romantic" },
+    { label: "治愈", value: "Healing" },
+    { label: "赛博", value: "Cyberpunk" }
+  ]
+};
+
+// 4. Detailed Smart Library (Accordion)
 type StyleGroup = {
     category: string;
     subGroups: {
@@ -118,18 +177,6 @@ const SMART_LIBRARY: StyleGroup[] = [
                     { label: "雨声", value: "Rain Sounds" },
                     { label: "放松", value: "Relaxing" }
                 ]
-            },
-            {
-                name: "未来贝斯 (Future Bass)",
-                tags: [
-                    { label: "Future Bass", value: "Future Bass" },
-                    { label: "活力", value: "Energetic" },
-                    { label: "卡哇伊", value: "Kawaii" },
-                    { label: "超级锯齿波", value: "Supersaw Chords" },
-                    { label: "闪亮琶音", value: "Sparkling Arpeggios" },
-                    { label: "可爱女声切片", value: "Cute Female Vocal Chops" },
-                    { label: "振奋Drop", value: "Uplifting Drop" }
-                ]
             }
         ]
     },
@@ -174,18 +221,6 @@ const SMART_LIBRARY: StyleGroup[] = [
                     { label: "和声", value: "Harmony" },
                     { label: "木吉他指弹", value: "Simple Acoustic Guitar Fingerpicking" },
                     { label: "亲密感", value: "Intimate" }
-                ]
-            },
-            {
-                name: "现代K-Pop",
-                tags: [
-                    { label: "K-Pop", value: "K-Pop" },
-                    { label: "欢快舞曲", value: "Upbeat Dance-Pop" },
-                    { label: "抓耳副歌", value: "Catchy Chorus" },
-                    { label: "精良制作", value: "Slick Production" },
-                    { label: "男团人声", value: "Male Group Vocals" },
-                    { label: "活力说唱", value: "Energetic Rap Verse" },
-                    { label: "泡泡糖流行", value: "Bubblegum Pop" }
                 ]
             }
         ]
@@ -242,7 +277,19 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
   const [selectedId, setSelectedId] = useState<string | null>(blocks[0]?.id || null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [activeTab, setActiveTab] = useState<'styles' | 'phrases'>('styles');
+  const [activeInstTab, setActiveInstTab] = useState<'chinese' | 'pop' | 'classical' | 'vocals' | 'emotion'>('chinese');
   
+  // Input Refs for Focus
+  const styleInputRef = useRef<HTMLTextAreaElement>(null);
+  const instrumentsInputRef = useRef<HTMLTextAreaElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+  const lyricsInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // ZOOM STATE
+  const [zoomLevel, setZoomLevel] = useState(15); 
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 50;
+
   // Drag State
   const [dragState, setDragState] = useState<{ blockId: string, startX: number, startDuration: number } | null>(null);
 
@@ -275,6 +322,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
       id: Date.now().toString(),
       type: 'Verse',
       style: '',
+      instruments: '',
       description: '',
       lyrics: '',
       duration: 30
@@ -315,9 +363,8 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragState) return;
       const deltaX = e.clientX - dragState.startX;
-      const deltaSeconds = deltaX / PIXELS_PER_SECOND;
-      const newDuration = Math.max(5, Math.round(dragState.startDuration + deltaSeconds)); // Min 5 seconds
-      
+      const deltaSeconds = deltaX / zoomLevel; 
+      const newDuration = Math.max(5, Math.round(dragState.startDuration + deltaSeconds));
       setBlocks(prev => prev.map(b => b.id === dragState.blockId ? { ...b, duration: newDuration } : b));
     };
 
@@ -333,7 +380,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragState, setBlocks]);
+  }, [dragState, setBlocks, zoomLevel]);
 
   const appendStyleTag = (tag: string) => {
     if (!selectedId) return;
@@ -341,6 +388,15 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
     if (block) {
       const newStyle = block.style ? `${block.style}, ${tag}` : tag;
       updateBlock(selectedId, 'style', newStyle);
+    }
+  };
+  
+  const appendInstrument = (inst: string) => {
+    if (!selectedId) return;
+    const block = blocks.find(b => b.id === selectedId);
+    if (block) {
+      const newInst = block.instruments ? `${block.instruments}, ${inst}` : inst;
+      updateBlock(selectedId, 'instruments', newInst);
     }
   };
 
@@ -360,12 +416,48 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
     const tag = `[${adj} ${inst} ${tech}]`;
     appendStyleTag(tag);
   };
+  
+  // Double Click Handling for Focus
+  const handleBlockDoubleClick = (blockId: string, track: 'structure' | 'style' | 'instruments' | 'narrative') => {
+      setSelectedId(blockId);
+      // Wait for state update then focus with visual cue
+      setTimeout(() => {
+          let targetRef: React.RefObject<HTMLTextAreaElement> | null = null;
+
+          if (track === 'style') targetRef = styleInputRef;
+          if (track === 'instruments') targetRef = instrumentsInputRef;
+          if (track === 'narrative') targetRef = descriptionInputRef;
+          if (track === 'structure') targetRef = lyricsInputRef;
+
+          if (targetRef && targetRef.current) {
+              targetRef.current.focus();
+              targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Add a temporary highlight effect
+              targetRef.current.classList.add('ring-2', 'ring-white', 'bg-[#333]');
+              setTimeout(() => {
+                  targetRef.current?.classList.remove('ring-2', 'ring-white', 'bg-[#333]');
+              }, 400);
+          }
+      }, 50);
+  };
+
+  // Zoom Handlers
+  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 5, MAX_ZOOM));
+  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 5, MIN_ZOOM));
+  const handleResetZoom = () => setZoomLevel(15);
 
   const selectedBlock = blocks.find(b => b.id === selectedId);
   const selectedIndex = blocks.findIndex(b => b.id === selectedId);
 
   // Time Ruler helpers
   const totalDurationSeconds = blocks.reduce((acc, b) => acc + b.duration, 0);
+  
+  const getRulerInterval = () => {
+      if (zoomLevel > 20) return 1;
+      if (zoomLevel > 5) return 5;
+      return 10;
+  };
+  const tickInterval = getRulerInterval();
 
   const containerClasses = isFullScreen 
     ? "fixed inset-0 z-[9999] w-screen h-screen rounded-none bg-[#121212]" 
@@ -375,7 +467,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
     <div className={`flex flex-col bg-[#1a1a1a] border border-[#333] overflow-hidden shadow-2xl font-sans select-none animate-fade-in transition-all duration-300 ${containerClasses}`}>
       
       {/* Top Bar */}
-      <div className="h-14 bg-[#252525] border-b border-[#333] flex items-center justify-between px-6 shrink-0">
+      <div className="h-14 bg-[#252525] border-b border-[#333] flex items-center justify-between px-6 shrink-0 z-30 relative shadow-md">
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-2 text-gray-400">
              <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
@@ -389,9 +481,16 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
           </span>
         </div>
 
-        <div className="flex items-center space-x-6">
-            <div className="flex items-center bg-black/30 rounded-lg px-3 py-1 border border-white/5">
-               <span className="text-[10px] text-gray-500 font-bold mr-2 uppercase">BPM (速度)</span>
+        <div className="flex items-center space-x-4">
+            {/* Zoom Controls Optimized */}
+            <div className="flex items-center bg-black/40 rounded-lg border border-white/10 mr-2 shadow-inner">
+                <Button type="button" variant="ghost" onClick={handleZoomOut} className="h-9 w-12 p-0 text-gray-400 hover:text-white rounded-l-lg hover:bg-white/5" title="缩小视图 (Zoom Out)"><ZoomOut className="w-5 h-5"/></Button>
+                <button type="button" onClick={handleResetZoom} className="text-[10px] text-gray-400 font-mono px-3 border-x border-white/5 h-9 hover:text-white transition-colors" title="重置缩放">{zoomLevel}px</button>
+                <Button type="button" variant="ghost" onClick={handleZoomIn} className="h-9 w-12 p-0 text-gray-400 hover:text-white rounded-r-lg hover:bg-white/5" title="放大视图 (Zoom In)"><ZoomIn className="w-5 h-5"/></Button>
+            </div>
+
+            <div className="flex items-center bg-black/30 rounded-lg px-3 py-1.5 border border-white/5">
+               <span className="text-[10px] text-gray-500 font-bold mr-2 uppercase">BPM</span>
                <input 
                   type="number" 
                   value={bpm} 
@@ -399,7 +498,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                   className="w-12 bg-transparent text-suno-neonPink font-mono font-bold text-sm focus:outline-none text-center"
                />
             </div>
-            <div className="flex items-center bg-black/30 rounded-lg px-3 py-1 border border-white/5">
+            <div className="flex items-center bg-black/30 rounded-lg px-3 py-1.5 border border-white/5">
                 <Clock className="w-3 h-3 text-suno-neonBlue mr-2" />
                 <span className="text-[10px] text-gray-500 font-bold mr-2 uppercase">总时长</span>
                 <span className="text-suno-neonBlue font-mono font-bold text-sm text-center">
@@ -411,73 +510,94 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                 type="button" 
                 onClick={() => setIsFullScreen(!isFullScreen)} 
                 variant="ghost" 
-                className="h-8 w-8 p-0 flex items-center justify-center text-gray-400 hover:text-white"
+                className="h-9 w-9 p-0 flex items-center justify-center text-gray-400 hover:text-white bg-black/20 rounded-lg border border-white/5"
             >
                {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </Button>
         </div>
       </div>
 
-      {/* Timeline Area */}
-      <div className="flex-1 flex flex-col min-h-0 bg-[#121212] relative overflow-hidden">
+      {/* Timeline Area (Scrollable) */}
+      <div className="flex-1 flex flex-col min-h-0 bg-[#121212] relative">
          
-         {/* Time Ruler */}
-         <div className="h-8 bg-[#1a1a1a] border-b border-[#333] flex items-end px-[200px] shrink-0 overflow-hidden">
-             <div className="flex relative h-full w-full" style={{ transform: 'translateX(0px)' }}> {/* Placeholder for scroll sync if needed */}
-                {Array.from({ length: Math.ceil(totalDurationSeconds / 5) + 5 }).map((_, i) => (
-                    <div key={i} className="absolute bottom-0 border-l border-[#444] h-2 text-[9px] text-gray-500 pl-1 font-mono" style={{ left: i * 5 * PIXELS_PER_SECOND }}>
-                        {Math.floor((i * 5) / 60)}:{(i * 5) % 60 < 10 ? '0' : ''}{(i * 5) % 60}
+         {/* Time Ruler (Fixed Top of Timeline) */}
+         <div className="h-8 bg-[#1a1a1a] border-b border-[#333] flex items-end px-[200px] shrink-0 overflow-hidden z-20 shadow-sm relative">
+             <div className="flex relative h-full w-full"> 
+                {Array.from({ length: Math.ceil(totalDurationSeconds / tickInterval) + 5 }).map((_, i) => (
+                    <div key={i} className="absolute bottom-0 border-l border-[#444] h-2 text-[9px] text-gray-500 pl-1 font-mono transition-all duration-300" style={{ left: i * tickInterval * zoomLevel }}>
+                        {Math.floor((i * tickInterval) / 60)}:{(i * tickInterval) % 60 < 10 ? '0' : ''}{(i * tickInterval) % 60}
                     </div>
                 ))}
              </div>
          </div>
 
-         <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar relative flex">
+         {/* Scrollable Container for Tracks */}
+         <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar relative flex">
             
-            {/* Track Headers (Left Sidebar) */}
-            <div className="w-[200px] bg-[#1f1f1f] border-r border-[#333] flex-shrink-0 z-20 sticky left-0 shadow-lg flex flex-col">
-               <div className="h-32 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors">
+            {/* Track Headers (Sticky Left Sidebar) */}
+            <div className="w-[200px] bg-[#1f1f1f] border-r border-[#333] flex-shrink-0 z-30 sticky left-0 shadow-[4px_0_10px_rgba(0,0,0,0.3)] flex flex-col min-h-full">
+               
+               {/* Track 1 Header: Structure */}
+               <div className="h-24 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors bg-[#202020]">
                   <div className="flex items-center justify-between">
                      <span className="text-xs font-bold text-gray-200">结构 (Structure)</span>
                      <LayoutTemplate className="w-3 h-3 text-suno-neonBlue" />
                   </div>
-                  <div className="text-[9px] text-gray-500">点击积木右侧边缘拖拽调整时长</div>
+                  <div className="text-[9px] text-gray-500 leading-tight">点击积木边缘调整时长，点击标题切换类型</div>
                </div>
-               <div className="h-32 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors bg-[#222]">
+
+               {/* Track 2 Header: Style */}
+               <div className="h-20 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors bg-[#1d1d1d]">
                    <div className="flex items-center justify-between">
                      <span className="text-xs font-bold text-suno-neonGreen">风格指令 (Style)</span>
                      <Tag className="w-3 h-3 text-suno-neonGreen" />
                   </div>
+                  <div className="text-[9px] text-gray-500">双击积木可输入硬性标签</div>
                </div>
+
+               {/* Track 3 Header: Instruments (NEW) */}
+               <div className="h-20 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors bg-[#1b1b1b]">
+                   <div className="flex items-center justify-between">
+                     <span className="text-xs font-bold text-cyan-400">乐器 (Instruments)</span>
+                     <Piano className="w-3 h-3 text-cyan-400" />
+                  </div>
+                  <div className="text-[9px] text-gray-500">双击积木配置乐器组合</div>
+               </div>
+
+               {/* Track 4 Header: Narrative */}
                <div className="h-32 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors bg-[#181818]">
                    <div className="flex items-center justify-between">
                      <span className="text-xs font-bold text-pink-400">叙事描述 (Narrative)</span>
-                     <FileText className="w-3 h-3 text-pink-400" />
+                     <Quote className="w-3 h-3 text-pink-400" />
                   </div>
+                   <div className="text-[9px] text-gray-600 leading-tight">
+                        双击积木输入多行自然语言描述
+                   </div>
                </div>
             </div>
 
             {/* Track Lanes Content */}
-            <div className="flex-1 bg-[#121212] relative" style={{ minWidth: totalDurationSeconds * PIXELS_PER_SECOND + 200 }}>
+            <div className="flex-1 bg-[#121212] relative min-h-full transition-all duration-300" style={{ minWidth: totalDurationSeconds * zoomLevel + 300 }}>
                
-               {/* Vertical Grid Lines */}
+               {/* Vertical Grid Lines (Adaptive) */}
                <div className="absolute inset-0 pointer-events-none z-0">
-                  {Array.from({ length: Math.ceil(totalDurationSeconds / 5) + 5 }).map((_, i) => (
-                      <div key={i} className="absolute top-0 bottom-0 border-r border-[#222]" style={{ left: i * 5 * PIXELS_PER_SECOND }}></div>
+                  {Array.from({ length: Math.ceil(totalDurationSeconds / tickInterval) + 5 }).map((_, i) => (
+                      <div key={i} className="absolute top-0 bottom-0 border-r border-[#222]" style={{ left: i * tickInterval * zoomLevel }}></div>
                   ))}
                </div>
 
                {/* Track 1: STRUCTURE */}
-               <div className="h-32 border-b border-[#333] flex items-center px-0 py-2 relative z-10">
-                  {blocks.map((block, index) => {
+               <div className="h-24 border-b border-[#333] flex items-center px-0 py-2 relative z-10">
+                  {blocks.map((block) => {
                     const typeConfig = BLOCK_TYPES.find(t => t.value === block.type) || BLOCK_TYPES[0];
                     const isSelected = block.id === selectedId;
-                    const width = block.duration * PIXELS_PER_SECOND;
+                    const width = block.duration * zoomLevel; 
                     
                     return (
                       <div
                         key={block.id}
                         onClick={() => setSelectedId(block.id)}
+                        onDoubleClick={() => handleBlockDoubleClick(block.id, 'structure')}
                         className={`relative group flex-shrink-0 h-full rounded-lg border cursor-pointer transition-colors duration-200 overflow-hidden flex flex-col ${typeConfig.color} ${typeConfig.border} ${isSelected ? 'ring-2 ring-white shadow-[0_0_20px_rgba(255,255,255,0.4)] z-10' : 'opacity-90 hover:opacity-100'}`}
                         style={{ width: `${width}px`, marginRight: '1px' }}
                       >
@@ -493,7 +613,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                             </select>
                          </div>
                          <div className="flex-1 p-2 bg-gradient-to-b from-transparent to-black/40 flex flex-col justify-end">
-                            <div className="text-[9px] font-mono text-white/70 absolute bottom-1 left-2">{block.duration}s</div>
+                            <div className="text-[9px] font-mono text-white/70 absolute bottom-1 left-2 pointer-events-none">{block.duration}s</div>
                          </div>
 
                          {/* Resize Handle */}
@@ -506,34 +626,65 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                       </div>
                     );
                   })}
-                  <button type="button" onClick={addBlock} className="h-full w-16 border-2 border-dashed border-[#333] hover:border-suno-neonBlue rounded-lg flex flex-col items-center justify-center text-[#444] hover:text-suno-neonBlue transition-all ml-2 group">
-                    <Plus className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                  <button type="button" onClick={addBlock} className="h-full w-12 border-2 border-dashed border-[#333] hover:border-suno-neonBlue rounded-lg flex flex-col items-center justify-center text-[#444] hover:text-suno-neonBlue transition-all ml-2 group">
+                    <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   </button>
                </div>
                
                {/* Track 2: TAGS */}
-               <div className="h-32 border-b border-[#333] flex items-center px-0 py-2 relative z-10 bg-[#161616]">
+               <div className="h-20 border-b border-[#333] flex items-center px-0 py-2 relative z-10 bg-[#161616]">
                   {blocks.map((block) => {
                       const isSelected = block.id === selectedId;
-                      const width = block.duration * PIXELS_PER_SECOND;
+                      const width = block.duration * zoomLevel;
                       return (
-                        <div key={block.id + '_style'} onClick={() => setSelectedId(block.id)} className={`flex-shrink-0 h-24 rounded-lg border flex flex-col p-2 overflow-hidden cursor-pointer transition-all ${isSelected ? 'border-suno-neonGreen bg-suno-neonGreen/10 z-10' : 'border-[#333] bg-[#222] hover:border-gray-500'}`} style={{ width: `${width}px`, marginRight: '1px' }}>
-                           <p className="text-[10px] text-suno-neonGreen font-mono leading-tight break-words">{block.style || <span className="opacity-30">暂无风格标签...</span>}</p>
+                        <div key={block.id + '_style'} 
+                             onClick={() => setSelectedId(block.id)}
+                             onDoubleClick={() => handleBlockDoubleClick(block.id, 'style')}
+                             className={`flex-shrink-0 h-16 rounded-lg border flex flex-col p-2 overflow-hidden cursor-pointer transition-all ${isSelected ? 'border-suno-neonGreen bg-suno-neonGreen/10 z-10 shadow-[0_0_15px_rgba(0,255,157,0.1)]' : 'border-[#333] bg-[#222] hover:border-gray-500'}`} style={{ width: `${width}px`, marginRight: '1px' }}>
+                           <p className="text-[10px] text-suno-neonGreen font-mono leading-tight break-words pointer-events-none">{block.style || <span className="opacity-30">暂无...</span>}</p>
+                           {isSelected && <div className="mt-auto text-[8px] text-gray-500 self-end opacity-50"><MousePointerClick className="w-3 h-3"/></div>}
                         </div>
                       )
                   })}
                </div>
 
-               {/* Track 3: NARRATIVE */}
+               {/* Track 3: INSTRUMENTS (NEW) */}
+               <div className="h-20 border-b border-[#333] flex items-center px-0 py-2 relative z-10 bg-[#1b1b1b]">
+                  {blocks.map((block) => {
+                      const isSelected = block.id === selectedId;
+                      const width = block.duration * zoomLevel;
+                      return (
+                        <div key={block.id + '_inst'} 
+                             onClick={() => setSelectedId(block.id)} 
+                             onDoubleClick={() => handleBlockDoubleClick(block.id, 'instruments')}
+                             className={`flex-shrink-0 h-16 rounded-lg border flex flex-col p-2 overflow-hidden cursor-pointer transition-all ${isSelected ? 'border-cyan-500 bg-cyan-900/20 z-10 shadow-[0_0_15px_rgba(34,211,238,0.1)]' : 'border-[#333] bg-[#222] hover:border-gray-500'}`} style={{ width: `${width}px`, marginRight: '1px' }}>
+                           <p className="text-[10px] text-cyan-300 font-mono leading-tight break-words pointer-events-none">{block.instruments || <span className="opacity-30">暂无...</span>}</p>
+                           {isSelected && <div className="mt-auto text-[8px] text-gray-500 self-end opacity-50"><MousePointerClick className="w-3 h-3"/></div>}
+                        </div>
+                      )
+                  })}
+               </div>
+
+               {/* Track 4: NARRATIVE */}
                <div className="h-32 border-b border-[#333] flex items-center px-0 py-2 relative bg-[#121212]">
                   {blocks.map((block) => {
                        const isSelected = block.id === selectedId;
-                       const width = block.duration * PIXELS_PER_SECOND;
+                       const width = block.duration * zoomLevel;
                        return (
-                          <div key={block.id + '_desc'} onClick={() => setSelectedId(block.id)} className={`flex-shrink-0 h-24 rounded-lg border bg-[#1a1a1a] p-3 overflow-hidden flex flex-col items-start cursor-pointer transition-all ${isSelected ? 'border-pink-500 bg-pink-900/10 z-10' : 'border-[#333] opacity-60 hover:opacity-100'}`} style={{ width: `${width}px`, marginRight: '1px' }}>
-                             <p className="text-[9px] text-pink-300 font-sans leading-relaxed line-clamp-4 w-full italic">
-                                {block.description || <span className="opacity-30 not-italic">暂无叙事描述...</span>}
+                          <div key={block.id + '_desc'} 
+                            onClick={() => setSelectedId(block.id)} 
+                            onDoubleClick={() => handleBlockDoubleClick(block.id, 'narrative')}
+                            className={`flex-shrink-0 h-28 rounded-lg border p-2 overflow-hidden flex flex-col items-start cursor-pointer transition-all relative group
+                            ${isSelected ? 'border-pink-500 bg-pink-900/10 z-10 shadow-[0_4px_20px_rgba(236,72,153,0.15)]' : 'border-[#333] bg-[#1a1a1a] opacity-80 hover:opacity-100 hover:border-gray-600'}`} 
+                            style={{ width: `${width}px`, marginRight: '1px' }}>
+                             
+                             {/* Decorative Background Icon */}
+                             <Quote className={`absolute bottom-2 right-2 w-6 h-6 ${isSelected ? 'text-pink-500/10' : 'text-white/5'} transition-colors`} />
+                             
+                             <p className={`text-[10px] font-sans leading-relaxed w-full whitespace-pre-wrap pointer-events-none ${isSelected ? 'text-pink-100' : 'text-gray-400'}`}>
+                                {block.description || <span className="opacity-30 italic">点击输入画面描述...</span>}
                              </p>
+                             {isSelected && <div className="mt-auto text-[8px] text-gray-500 self-end opacity-50 absolute bottom-2 left-2"><MousePointerClick className="w-3 h-3"/></div>}
                           </div>
                        )
                   })}
@@ -543,7 +694,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
       </div>
 
       {/* Inspector (Bottom Panel) */}
-      <div className="h-[320px] bg-[#1e1e1e] border-t border-black flex flex-col z-20 shadow-[0_-5px_30px_rgba(0,0,0,0.6)] shrink-0">
+      <div className="h-[320px] bg-[#1e1e1e] border-t border-black flex flex-col z-40 shadow-[0_-5px_30px_rgba(0,0,0,0.6)] shrink-0 relative">
          <div className="h-10 bg-[#252525] border-b border-[#333] flex items-center px-6 justify-between shrink-0">
              <div className="flex items-center space-x-4">
                <span className="text-xs font-bold text-suno-neonBlue uppercase tracking-widest flex items-center">
@@ -642,52 +793,101 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                     </div>
                  </div>
 
-                 {/* CENTER: Generator & Editors */}
-                 <div className="col-span-5 border-r border-[#333] p-4 flex flex-col space-y-4 bg-[#1e1e1e]">
+                 {/* CENTER: Generator, Lyrics, Style & Desc */}
+                 <div className="col-span-5 border-r border-[#333] p-4 flex flex-col space-y-3 bg-[#1e1e1e]">
                      
-                     {/* Solo Generator */}
-                     <div className="bg-gradient-to-r from-suno-neonBlue/10 to-purple-900/20 p-3 rounded-lg border border-suno-neonBlue/30 shrink-0">
-                        <label className="text-[10px] font-bold text-suno-neonBlue uppercase mb-2 flex items-center">
-                           <Guitar className="w-3 h-3 mr-1" /> 独奏/加花生成器 (Solo/Lead Generator)
-                        </label>
-                        <div className="grid grid-cols-3 gap-2 mb-2">
-                           <select value={soloInst} onChange={(e) => setSoloInst(e.target.value)} className="bg-[#111] border border-[#333] text-[10px] text-gray-300 rounded px-1 py-1 focus:border-suno-neonBlue outline-none">{SOLO_INSTRUMENTS.map(i => <option key={i} value={i}>{i}</option>)}</select>
-                           <select value={soloAdj} onChange={(e) => setSoloAdj(e.target.value)} className="bg-[#111] border border-[#333] text-[10px] text-gray-300 rounded px-1 py-1 focus:border-suno-neonBlue outline-none">{SOLO_ADJECTIVES.map(i => <option key={i} value={i}>{i}</option>)}</select>
-                           <select value={soloTech} onChange={(e) => setSoloTech(e.target.value)} className="bg-[#111] border border-[#333] text-[10px] text-gray-300 rounded px-1 py-1 focus:border-suno-neonBlue outline-none">{SOLO_TECHNIQUES.map(i => <option key={i} value={i}>{i}</option>)}</select>
+                     {/* 1. Solo Generator (Compact Top) */}
+                     <div className="bg-gradient-to-r from-suno-neonBlue/10 to-purple-900/20 p-2 rounded-lg border border-suno-neonBlue/30 shrink-0">
+                        <div className="flex justify-between items-center mb-1">
+                             <label className="text-[10px] font-bold text-suno-neonBlue uppercase flex items-center">
+                                <Guitar className="w-3 h-3 mr-1" /> 独奏/加花生成器
+                             </label>
+                             <Button type="button" onClick={generateSolo} variant="neon" className="h-5 text-[9px] px-2 py-0">✨ 生成</Button>
                         </div>
-                        <Button type="button" onClick={generateSolo} variant="neon" className="w-full h-7 text-[10px] py-0">✨ 生成指令并添加 (Generate & Add)</Button>
+                        <div className="grid grid-cols-3 gap-1">
+                           <select value={soloInst} onChange={(e) => setSoloInst(e.target.value)} className="bg-[#111] border border-[#333] text-[9px] text-gray-300 rounded px-1 py-1 focus:border-suno-neonBlue outline-none">{SOLO_INSTRUMENTS.map(i => <option key={i} value={i}>{i}</option>)}</select>
+                           <select value={soloAdj} onChange={(e) => setSoloAdj(e.target.value)} className="bg-[#111] border border-[#333] text-[9px] text-gray-300 rounded px-1 py-1 focus:border-suno-neonBlue outline-none">{SOLO_ADJECTIVES.map(i => <option key={i} value={i}>{i}</option>)}</select>
+                           <select value={soloTech} onChange={(e) => setSoloTech(e.target.value)} className="bg-[#111] border border-[#333] text-[9px] text-gray-300 rounded px-1 py-1 focus:border-suno-neonBlue outline-none">{SOLO_TECHNIQUES.map(i => <option key={i} value={i}>{i}</option>)}</select>
+                        </div>
                      </div>
 
-                     <div className="grid grid-cols-2 gap-4 flex-1 min-h-0">
+                     {/* 2. Lyrics (Middle Main) */}
+                     <div className="flex-1 flex flex-col min-h-0">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase mb-1 flex items-center"><Mic2 className="w-3 h-3 mr-1" /> 歌词内容 (Lyrics)</label>
+                        <textarea 
+                           ref={lyricsInputRef}
+                           className="flex-1 w-full bg-[#111] border border-[#333] rounded-lg p-2 text-sm text-gray-300 font-mono focus:border-suno-neonBlue focus:ring-1 focus:ring-suno-neonBlue resize-y leading-relaxed min-h-[100px]"
+                           value={selectedBlock.lyrics}
+                           onChange={(e) => updateBlock(selectedBlock.id, 'lyrics', e.target.value)}
+                           placeholder="在此输入该段落的歌词..."
+                        />
+                     </div>
+
+                     {/* 3. Style & Desc (Bottom Split) */}
+                     <div className="grid grid-cols-2 gap-2 h-24 shrink-0">
                         <div className="flex flex-col h-full">
-                            <label className="text-[10px] font-bold text-suno-neonGreen uppercase mb-1 flex items-center"><Tag className="w-3 h-3 mr-1" /> 风格指令 (Style Tags)</label>
+                            <label className="text-[10px] font-bold text-suno-neonGreen uppercase mb-1 flex items-center"><Tag className="w-3 h-3 mr-1" /> 风格指令</label>
                             <textarea 
-                               className="flex-1 w-full bg-[#111] border border-[#333] rounded px-2 py-2 text-xs text-suno-neonGreen font-mono focus:border-suno-neonGreen focus:ring-1 focus:ring-suno-neonGreen resize-none"
-                               value={selectedBlock.style}
-                               onChange={(e) => updateBlock(selectedBlock.id, 'style', e.target.value)}
-                               placeholder="此处显示生成的硬性标签..."
+                                ref={styleInputRef}
+                                className="flex-1 w-full bg-[#111] border border-[#333] rounded px-2 py-2 text-xs text-suno-neonGreen font-mono focus:border-suno-neonGreen focus:ring-1 focus:ring-suno-neonGreen resize-none"
+                                value={selectedBlock.style}
+                                onChange={(e) => updateBlock(selectedBlock.id, 'style', e.target.value)}
+                                placeholder="硬性标签..."
                             />
                         </div>
                         <div className="flex flex-col h-full">
-                            <label className="text-[10px] font-bold text-pink-400 uppercase mb-1 flex items-center"><FileText className="w-3 h-3 mr-1" /> 叙事描述 (Description)</label>
+                            <label className="text-[10px] font-bold text-pink-400 uppercase mb-1 flex items-center"><FileText className="w-3 h-3 mr-1" /> 叙事描述</label>
                             <textarea 
+                               ref={descriptionInputRef}
                                className="flex-1 w-full bg-[#111] border border-[#333] rounded px-2 py-2 text-xs text-pink-300 font-sans focus:border-pink-500 focus:ring-1 focus:ring-pink-500 resize-none leading-relaxed"
                                value={selectedBlock.description || ''}
                                onChange={(e) => updateBlock(selectedBlock.id, 'description', e.target.value)}
-                               placeholder="此处添加自然语言描述..."
+                               placeholder="画面描述..."
                             />
                         </div>
                      </div>
                  </div>
 
-                 {/* RIGHT: Lyrics */}
+                 {/* RIGHT: Instruments (Prominent) */}
                  <div className="col-span-4 p-4 flex flex-col bg-[#1a1a1a]">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase mb-2 flex items-center"><Mic2 className="w-3 h-3 mr-1" /> 歌词内容 (Lyrics)</label>
+                    <div className="flex items-center justify-between mb-2 shrink-0">
+                        <label className="text-[10px] font-bold text-cyan-400 uppercase flex items-center"><BoomBox className="w-3 h-3 mr-1" /> 乐器配置 (Instruments)</label>
+                        <span className="text-[9px] text-cyan-700 bg-cyan-900/10 px-1 rounded border border-cyan-900/30">Track 3</span>
+                    </div>
+
+                    {/* NEW: Instrument Presets Tabs */}
+                    <div className="flex border border-[#333] rounded overflow-hidden mb-2 shrink-0">
+                       <button type="button" onClick={() => setActiveInstTab('chinese')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'chinese' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>国风</button>
+                       <button type="button" onClick={() => setActiveInstTab('pop')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'pop' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>流行</button>
+                       <button type="button" onClick={() => setActiveInstTab('classical')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'classical' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>古典</button>
+                       <button type="button" onClick={() => setActiveInstTab('vocals')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'vocals' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>人声</button>
+                       <button type="button" onClick={() => setActiveInstTab('emotion')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'emotion' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>情感</button>
+                    </div>
+
+                    {/* NEW: Instrument Buttons Grid (Expanded Space) */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar mb-3 bg-[#111] border border-[#333] rounded p-2">
+                       <div className="grid grid-cols-3 gap-1.5">
+                          {INSTRUMENT_PRESETS[activeInstTab].map((inst) => (
+                             <button
+                               key={inst.value}
+                               type="button"
+                               onClick={() => appendInstrument(inst.value)}
+                               className="text-[9px] py-1.5 px-1 bg-[#1e1e1e] border border-[#333] rounded hover:border-cyan-400 hover:text-cyan-400 text-gray-400 transition-colors truncate"
+                               title={inst.value}
+                             >
+                               {inst.label}
+                             </button>
+                          ))}
+                       </div>
+                    </div>
+
+                    {/* Manual Input (Small Fixed Height) */}
                     <textarea 
-                       className="flex-1 w-full bg-[#111] border border-[#333] rounded-lg p-3 text-sm text-gray-300 font-mono focus:border-suno-neonBlue focus:ring-1 focus:ring-suno-neonBlue resize-none leading-relaxed"
-                       value={selectedBlock.lyrics}
-                       onChange={(e) => updateBlock(selectedBlock.id, 'lyrics', e.target.value)}
-                       placeholder="在此输入该段落的歌词..."
+                        ref={instrumentsInputRef}
+                        className="h-20 shrink-0 w-full bg-[#111] border border-[#333] rounded-lg p-3 text-sm text-cyan-300 font-mono focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 resize-none leading-relaxed"
+                        value={selectedBlock.instruments || ''}
+                        onChange={(e) => updateBlock(selectedBlock.id, 'instruments', e.target.value)}
+                        placeholder="手动补充..."
                     />
                  </div>
               </div>
