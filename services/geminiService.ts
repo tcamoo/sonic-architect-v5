@@ -26,50 +26,50 @@ const ARTIST_KNOWLEDGE = `
    - Keywords: "Electro-Chinoiserie, Nu-Disco, Sultry Pop".
    - Vocals: "Sultry, coquettish, breathy, melismatic runs, slide notes, distinct Chinese opera influence".
 
-**Suno V5 Prompting Rules:**
-1. **Anchoring**: Place the most important style keyword at the VERY START and VERY END of the prompt.
-   - Example: "Cinematic Soul, slow build... Cinematic Soul".
-2. **JSON-Style (Experimental)**: V5 understands structured data.
-   - Example: {"genre": "Trap", "vocal": "Deep", "bpm": 140}.
-3. **Dynamic Tags**: Use time duration in brackets.
-   - Example: [Solo: 12s Saxophone], [Intro: 15s Slow build].
+**Suno V5 Prompting Rules (CRITICAL):**
+1. **Global Consistency**: Ensure the "Style Prompt" defines the overall genre, and individual sections (Verse/Chorus) follow that genre but add variations.
+2. **Anchoring**: Place the most important style keyword at the VERY START and VERY END of the style prompt string.
+3. **Section Headers**: V5 reads section headers for context. Combine Type + Tempo/Vibe + Instruments.
+   - GOOD: [Verse 1: Soft Piano, Slow build]
+   - BAD: [Verse 1] (Too generic)
+4. **Timing**: Use the estimated duration to control pacing.
+   - Example: [Intro: 15s Atmospheric]
 `;
 
 const SYSTEM_INSTRUCTION = `
-你是一位 Suno.com 提示词专家，精通最新的 V5 模型特性。
-请根据用户的请求（V4 或 V5 模式）生成最佳的提示词。
+你是一位世界顶级的音乐制作人和 Suno V5 提示词工程师 (Sonic Architect)。
+你的任务是将用户的编曲意图转化为 Suno V5 最能完美执行的 Prompt。
 
-${ARTIST_KNOWLEDGE}
+**核心生成逻辑**：
 
-**生成规则**：
+1. **分析整体氛围 (Global Vibe Analysis)**:
+   - 扫描用户提供的所有 Structure Blocks。
+   - 提取共性的风格 (Style) 和乐器 (Instruments)。
+   - 确定一首歌曲的 "主基调" (例如：是悲伤的钢琴民谣，还是激进的摇滚)。
+   - 在生成的 Style Prompt 中，必须体现这个主基调，并使用 **首尾锚定**。
 
-1. **Style Prompt (风格栏)**:
-   - **如果是 V5 模式**:
-     - 必须使用 **首尾锚定 (Anchoring)** 策略。
-     - 尝试使用 **JSON-Like** 的描述方式（虽然 Suno 输入框是文本，但我们用紧凑的文本模拟 JSON 结构，或者使用极度精确的关键词链）。
-     - 格式示例: "Art Pop, Ethereal, [Genre: Dream Pop], [Vocals: Whispery], [Mood: Melancholic] ... Art Pop"
-   - **如果是 V4 模式**:
-     - 使用传统的逗号分隔标签。
-     - 格式示例: "Mandopop, Female Vocals, Sad, Piano, Slow"
+2. **构建风格提示词 (Style Prompt Construction)**:
+   - 格式：[Primary Genre], [Mood], [Global Instruments], [Vocal Style] ... [Primary Genre]
+   - 如果用户选择了 "大师预设" 或特定艺人风格，务必加入相关的专业关键词（如 "Dream Pop" for Faye Wong）。
+   - **V5 特性**: 尝试使用伪 JSON 格式增强理解，例如: "Genre: Pop, Vibe: Sad, Inst: Piano".
 
-2. **Lyrics (歌词栏 - 包含结构)**:
-   - 如果用户提供了 "Structure Blocks" (积木结构)：
-     - 你必须严格按照积木的顺序生成歌词。
-     - 将积木的 "Type", "Duration" (时长), "Style" (技术标签), "Instruments" (乐器) 和 "Description" (自然语言描述) 融合。
-     - 示例标签: [Verse 1 (30s): Soft vocals, Piano accomp]
-     - 务必在方括号内标记估算的时长。
-     - 如果用户设置了 BPM，请在歌词最上方添加 [BPM: 120] 标签。
-   - **通用规则**:
-     - 乐器提示必须用 **方括号 []** 包裹（严禁圆括号）。
-     - 包含 [Verse], [Chorus], [Bridge], [Outro] 等标准结构。
+3. **构建歌词与结构 (Lyrics & Structure Construction)**:
+   - **严格遵守** 用户在工作台定义的结构顺序。
+   - **智能融合标签**: 将 [Type], [Duration], [Instruments] 融合为一个强大的段落头。
+     - 格式: **[SectionType: Mood/Vibe, Main Instrument]**
+     - 示例: **[Verse 1: Melancholic, Acoustic Guitar Arpeggio]**
+   - **歌词内容**:
+     - 如果用户提供了歌词，请按段落分配。
+     - 如果是纯音乐 (Instrumental)，请在段落内填写具体的演奏细节描述（如 "The guitar plays a sorrowful melody..."）。
+     - 必须在开头添加 **[BPM: {bpm}]** 标签。
 
 **响应格式 (JSON)**:
 {
-  "title": "中文歌名",
-  "stylePrompt": "生成的英文提示词字符串",
-  "lyrics": "包含标签的歌词",
-  "explanation": "简短中文说明 (如：'采用了王菲式的空灵唱腔，并使用了V5的首尾锚定技巧')",
-  "styleDescription": "详细的编曲描述 (英文)"
+  "title": "歌名 (中文/英文)",
+  "stylePrompt": "填入 Suno Style 栏的字符串",
+  "lyrics": "填入 Suno Lyrics 栏的完整内容 (包含所有 [标签])",
+  "explanation": "简短的中文解释 (你的编曲思路)",
+  "styleDescription": "一段详细的英文描述，用于解释歌曲的整体画面感 (Optional)"
 }
 `;
 
@@ -90,7 +90,6 @@ export const hasApiKey = (): boolean => {
 };
 
 const getApiKey = (): string => {
-  // Priority: Local Storage (User Settings) -> Environment Variable (Deployment)
   const localKey = localStorage.getItem('gemini_api_key');
   if (localKey && localKey.trim().length > 0) {
     return localKey;
@@ -109,7 +108,6 @@ const getApiKey = (): string => {
 export const validateApiKey = async (key: string): Promise<boolean> => {
   try {
     const ai = new GoogleGenAI({ apiKey: key });
-    // Make a minimal request to check validity
     await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: "Hi",
@@ -124,47 +122,68 @@ export const validateApiKey = async (key: string): Promise<boolean> => {
 export const generateSunoPrompt = async (request: SongRequest): Promise<GeneratedSong> => {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("API Key 未配置。请点击右上角 'API 设置' 进行配置。");
+    throw new Error("API Key 未配置。请点击右上角 '系统设置' 进行配置。");
   }
 
   const ai = new GoogleGenAI({ apiKey });
 
   let context = "";
+  
   if (request.mode === 'inspiration') {
-    context = `Mode: Inspiration. Theme: ${request.topic}, Mood: ${request.mood}, Genre: ${request.genre}`;
+    context = `
+    TASK: Inspiration Mode.
+    Topic: ${request.topic}
+    Mood: ${request.mood}
+    Genre: ${request.genre}
+    Instrumental: ${request.instrumental}
+    `;
   } else if (request.useStructureBuilder && request.structureBlocks) {
-    // Compile structure blocks into a readable format for the LLM
-    const structureDesc = request.structureBlocks.map(b => 
-      `Section: [${b.type}]
-       Target Duration: ${b.duration} seconds
-       Technical Tags: ${b.style}
-       Instruments: ${b.instruments || "None"}
-       Narrative Description: ${b.description || "None"}
-       Lyrics Content: ${b.lyrics || "(Generate lyrics based on theme or keep instrumental)"}`
-    ).join("\n---\n");
+    // Advanced Logic for Structure Builder
+    const blocksData = request.structureBlocks.map((b, index) => {
+      return `
+      Block ${index + 1}:
+      - Type: ${b.type}
+      - Duration: ${b.duration} seconds
+      - Style Tags: ${b.style || "None"}
+      - Specific Instruments: ${b.instruments || "None"}
+      - Narrative/Vibe: ${b.description || "None"}
+      - Lyrics Fragment: "${b.lyrics.substring(0, 50)}..."
+      `;
+    }).join("\n");
+
+    context = `
+    TASK: Arrangement Mode (Visual Workstation).
     
-    context = `Mode: Structure Builder.
-    Total Estimated Duration: ${request.targetDuration} minutes.
-    BPM: ${request.bpm || "Auto"}.
+    GLOBAL SETTINGS:
+    - BPM: ${request.bpm}
+    - Total Duration: ${request.targetDuration} minutes
+    - Custom User Instructions: ${request.customInstructions}
     
-    Defined Structure:
-    ${structureDesc}`;
+    STRUCTURE BLUEPRINT (Strictly follow this order):
+    ${blocksData}
+    
+    INSTRUCTION:
+    Analyze the "Specific Instruments" and "Narrative/Vibe" from all blocks to determine a cohesive main genre.
+    Then, generate a "Style Prompt" that anchors this main genre.
+    Finally, write the "Lyrics" field with advanced V5 tags like [Verse 1: Sad Piano, 30s].
+    `;
   } else {
-    context = `Mode: Standard Arrangement. Original Lyrics: ${request.originalLyrics}`;
+    // Text-only mode fallback
+    context = `
+    TASK: Standard Text Arrangement.
+    Original Lyrics: ${request.originalLyrics}
+    Custom Instructions: ${request.customInstructions}
+    `;
   }
 
   const prompt = `
-    Suno Model Version: ${request.modelVersion.toUpperCase()}
-    Custom Instructions: ${request.customInstructions || "None"}
-    Instrumental: ${request.instrumental || false}
+    Target Model: Suno V5
     
-    Content Context:
+    INPUT CONTEXT:
     ${context}
 
-    Task: Create the perfect Suno prompt. 
-    If Structure Builder is used, STRICTLY follow the section order and styles provided. 
-    If V5, use anchoring and dynamic timing tags (e.g. [Intro: 15s]).
-    If the user mentions a specific artist (e.g. Faye Wong, G.E.M.), refer to the Artist Knowledge Base.
+    Perform the task acting as the Sonic Architect AI. 
+    Ensure the output is musically coherent and leverages V5's ability to understand instrument placement and timing.
   `;
 
   const response = await ai.models.generateContent({
