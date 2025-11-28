@@ -12,6 +12,7 @@ export interface StructureBlock {
   id: string;
   type: 'Intro' | 'Verse' | 'Pre-Chorus' | 'Chorus' | 'Bridge' | 'Outro' | 'Instrumental' | 'Custom';
   style: string; // Technical tags (e.g. "Guzheng Solo", "Heavy Bass")
+  instruments?: string; // Specific instruments (e.g. "Piano, Drums")
   description?: string; // Narrative (e.g. "A soulful male voice telling a story")
   lyrics: string;
   duration: number; // Duration in seconds
