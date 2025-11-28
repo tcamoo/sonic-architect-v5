@@ -1,7 +1,8 @@
 
 # 🎵 SONIC ARCHITECT V5 - SUNO 编曲大师
 
-![Sonic Architect V5 Workstation](https://file.notion.so/f/f/870275c6-2917-4835-8594-540702d75924/09c748eb-a1d2-436f-b27b-2401f11e92d6/image.png?id=d8904791-0361-464a-bf56-06834468f029&table=block&spaceId=870275c6-2917-4835-8594-540702d75924&expirationTimestamp=1741255200&signature=g7m0vE_zHj2a2j73Q8_rR14n_sZpW-v2C0v_v3N_v3s&downloadName=image.png)
+![Sonic Architect V5 Workstation](<img width="1428" height="793" alt="image" src="https://github.com/user-attachments/assets/a52d2177-f320-453d-b7b3-ae5aef8c6b15" />
+)
 
 **Sonic Architect (声波架构师)** 是专为 [Suno.com](https://suno.com) 最新的 **V5 模型** 打造的高级 AI 音乐编曲工作台。
 
