@@ -5,7 +5,7 @@ import { ResultCard } from './components/ResultCard';
 import { SettingsModal } from './components/SettingsModal';
 import { SongRequest, GeneratedSong, GenerationStatus } from './types';
 import { generateSunoPrompt, hasApiKey } from './services/geminiService';
-import { Disc, Music4, Settings, Activity } from 'lucide-react';
+import { Disc, Settings, Activity, Zap } from 'lucide-react';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<GenerationStatus>(GenerationStatus.IDLE);
@@ -99,31 +99,22 @@ const App: React.FC = () => {
         <div className="music-note animate-float left-[85%] bottom-[-120px] text-5xl text-suno-primary/20">♩</div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 w-full border-b border-white/5 bg-black/60 backdrop-blur-xl shadow-lg">
-        <div className="max-w-[1800px] mx-auto px-6 py-4 flex items-center justify-between">
+      {/* COMPACT ELEGANT HEADER */}
+      <header className="relative z-10 w-full glass-header shadow-md h-16 shrink-0">
+        <div className="max-w-[1920px] mx-auto px-6 h-full flex items-center justify-between">
           
-          {/* Animated Logo Section */}
+          {/* Logo Section - RESTORED SIZE */}
           <div className="flex items-center space-x-4 group cursor-pointer hover:opacity-90 transition-opacity">
             <div className="relative">
-                {/* Spinning & Pulsing Glow */}
-                <div className="absolute inset-0 bg-suno-neonBlue rounded-full blur-md opacity-40 animate-pulse group-hover:opacity-70 transition-opacity"></div>
-                <div className="absolute -inset-1 border border-suno-neonBlue/30 rounded-full animate-[spin_4s_linear_infinite]"></div>
-                
-                {/* Main Icon */}
-                <Disc className="w-9 h-9 text-white relative z-10 animate-[spin_8s_linear_infinite] group-hover:animate-[spin_2s_linear_infinite]" />
-                
-                {/* Center Dot Pulse */}
-                <div className="absolute inset-[38%] bg-suno-neonPink rounded-full animate-ping z-20 opacity-50"></div>
+                <div className="absolute inset-0 bg-suno-neonBlue rounded-full blur-md opacity-50 animate-pulse"></div>
+                <Disc className="w-10 h-10 text-white relative z-10 animate-[spin_8s_linear_infinite]" />
             </div>
-            <div className="flex flex-col">
-                <h1 className="text-2xl font-black tracking-tighter text-white italic leading-none flex items-center">
-                   <span className="mr-0.5">SONIC</span>
-                   <span className="text-suno-neonBlue drop-shadow-[0_0_8px_rgba(0,243,255,0.5)]">ARCHITECT</span> 
+            <div className="flex flex-col justify-center">
+                <h1 className="text-2xl font-black tracking-tighter text-white italic leading-none">
+                   SONIC<span className="text-suno-neonBlue">ARCHITECT</span> 
                 </h1>
-                <div className="flex items-center space-x-2 mt-1">
-                   <span className="text-[9px] bg-gradient-to-r from-suno-neonPink to-purple-500 text-white px-1.5 py-0.5 rounded font-bold tracking-wider shadow-[0_0_10px_rgba(255,0,255,0.4)]">V5 ENGINE</span>
-                   <span className="text-[9px] text-gray-500 tracking-[0.2em] uppercase hidden sm:inline-block">/ AI Music Workstation</span>
+                <div className="flex items-center mt-0.5">
+                    <span className="text-[10px] font-bold text-gray-400 tracking-[0.2em] uppercase">Suno V5 Workstation</span>
                 </div>
             </div>
           </div>
@@ -131,105 +122,103 @@ const App: React.FC = () => {
           <nav className="flex items-center gap-4">
              <button 
               onClick={() => setShowSettings(true)}
-              className="flex items-center text-xs font-bold text-gray-400 hover:text-white transition-all border border-white/10 px-4 py-2 rounded-full hover:bg-white/5 hover:border-suno-neonBlue/50 hover:shadow-[0_0_15px_rgba(0,243,255,0.2)]"
+              className="flex items-center text-[10px] font-bold text-gray-400 hover:text-white transition-all border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/5 hover:border-suno-neonBlue/50"
             >
-              <Settings className="w-3 h-3 ml-2 text-suno-primary" />
-              <span className="ml-2">API 配置</span>
+              <Settings className="w-3 h-3 ml-1.5 text-suno-primary" />
+              <span className="ml-1.5 mr-1">系统设置</span>
             </button>
           </nav>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-grow max-w-[1800px] mx-auto w-full px-4 sm:px-6 py-8 flex flex-col lg:flex-row gap-4">
+      <main className="relative z-10 flex-grow max-w-[1920px] mx-auto w-full px-4 sm:px-6 py-4 flex flex-col lg:flex-row gap-4 h-[calc(100vh-4rem)] overflow-hidden">
         
         {/* Left Column (Workstation) */}
-        {/* MODIFIED: Width is now 80% when in workstation mode */}
-        <div className={`w-full ${isWorkstationMode ? 'lg:w-[80%]' : 'lg:w-[480px] lg:flex-shrink-0'} transition-all duration-500 ease-in-out space-y-6`}>
-            <div className="space-y-2 mb-6 pl-2 border-l-4 border-suno-neonBlue/50">
-                <h2 className="text-4xl font-black text-white italic tracking-tighter neon-text">
-                    MAKE IT <span className="text-transparent bg-clip-text bg-gradient-to-r from-suno-neonBlue to-suno-neonPink">REAL.</span>
-                </h2>
-                <p className="text-gray-400 text-sm font-medium">
-                    专为 Suno V5 打造。集成大师级国风乐器、真实人声细节与首尾锚定逻辑。
-                </p>
-            </div>
-            <InputForm 
-              onSubmit={handleGenerate} 
-              isLoading={status === GenerationStatus.LOADING} 
-              onWorkstationChange={setIsWorkstationMode}
-            />
+        {/* 80% Width in Workstation Mode */}
+        <div className={`h-full flex flex-col ${isWorkstationMode ? 'lg:w-[80%]' : 'lg:w-[480px] lg:flex-shrink-0'} transition-all duration-500 ease-in-out`}>
             
-            {status === GenerationStatus.ERROR && (
-                <div className="p-4 bg-red-950/50 border border-red-500/50 rounded-lg text-red-200 text-sm flex items-center animate-fade-in">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mr-3 animate-pulse"></div>
-                    {error}
+            {/* Elegant Slogan Bar */}
+            <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center space-x-2">
+                   <div className="w-1.5 h-1.5 bg-suno-neonBlue rounded-full animate-pulse"></div>
+                   <span className="text-[10px] font-mono text-suno-neonBlue/70 tracking-[0.2em] uppercase">Make It Real // AI Audio Synthesis</span>
                 </div>
-            )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                <InputForm 
+                  onSubmit={handleGenerate} 
+                  isLoading={status === GenerationStatus.LOADING} 
+                  onWorkstationChange={setIsWorkstationMode}
+                />
+                
+                {status === GenerationStatus.ERROR && (
+                    <div className="mt-4 p-3 bg-red-950/50 border border-red-500/50 rounded-lg text-red-200 text-xs flex items-center animate-fade-in">
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2 animate-pulse"></div>
+                        {error}
+                    </div>
+                )}
+            </div>
         </div>
 
         {/* Right Column (Result & Visualization) */}
-        {/* MODIFIED: Width is now 20% when in workstation mode */}
-        <div className={`${isWorkstationMode ? 'lg:w-[20%] min-w-[280px]' : 'flex-1'} lg:pl-6 lg:border-l border-white/5 pt-8 lg:pt-0 min-h-[600px] flex flex-col transition-all duration-500 ease-in-out`}>
+        {/* 20% Width in Workstation Mode */}
+        <div className={`${isWorkstationMode ? 'lg:w-[20%] min-w-[300px]' : 'flex-1'} lg:pl-4 lg:border-l border-white/5 h-full flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}>
             
-            {/* Idle State - Holographic Workstation Placeholder */}
-            {status === GenerationStatus.IDLE && (
-                <div className="h-full flex flex-col items-center justify-center relative opacity-80 hover:opacity-100 transition-opacity duration-500">
-                    {/* Holographic Circle */}
-                    <div className="relative w-48 h-48 flex items-center justify-center mb-8">
-                        <div className="absolute inset-0 border border-suno-neonBlue/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
-                        <div className="absolute inset-4 border border-dashed border-suno-neonBlue/30 rounded-full animate-[spin_20s_linear_infinite_reverse]"></div>
-                        <div className="absolute inset-12 border border-suno-neonPink/20 rounded-full animate-pulse"></div>
-                        
-                        {/* Center Icon */}
-                        <div className="relative z-10 bg-black/50 p-4 rounded-full border border-white/10 backdrop-blur-sm shadow-[0_0_30px_rgba(0,243,255,0.1)]">
-                           <Activity className="w-8 h-8 text-suno-neonBlue animate-pulse" />
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {/* Idle State - Holographic Workstation Placeholder - RESTORED & ENHANCED */}
+                {status === GenerationStatus.IDLE && (
+                    <div className="h-full flex flex-col items-center justify-center relative opacity-80 hover:opacity-100 transition-opacity duration-500">
+                        {/* Holographic Circle */}
+                        <div className="relative w-48 h-48 flex items-center justify-center mb-8">
+                            <div className="absolute inset-0 border-2 border-suno-neonBlue/20 rounded-full animate-[spin_10s_linear_infinite]"></div>
+                            <div className="absolute inset-4 border border-dashed border-suno-neonBlue/30 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
+                            <div className="absolute inset-0 border-4 border-t-suno-neonBlue/10 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                            
+                            {/* Scanning Line */}
+                            <div className="absolute inset-0 w-full h-1 bg-suno-neonBlue/20 shadow-[0_0_15px_rgba(0,243,255,0.5)] animate-[scan_3s_ease-in-out_infinite] top-1/2"></div>
+                            
+                            {/* Center Icon */}
+                            <div className="relative z-10 bg-black/80 p-4 rounded-full border border-white/10 backdrop-blur-md shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+                                <Zap className="w-8 h-8 text-suno-neonBlue animate-pulse" />
+                            </div>
                         </div>
                         
-                        {/* Scanning Line */}
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-suno-neonBlue/10 to-transparent w-full h-[2px] animate-[scan_3s_ease-in-out_infinite] opacity-30"></div>
-                    </div>
-                    
-                    <div className="text-center space-y-3">
-                        <h3 className="text-lg font-bold text-white tracking-[0.3em] uppercase">System Ready</h3>
-                        <div className="flex flex-col items-center justify-center space-y-1 text-[10px] font-mono text-suno-neonBlue/70">
-                            <span>V5 ENGINE ONLINE</span>
-                            <span>WAITING FOR INPUT</span>
+                        <div className="text-center space-y-3">
+                            <h3 className="text-xl font-black text-white tracking-[0.2em] italic">SYSTEM READY</h3>
+                            <div className="flex flex-col items-center space-y-1">
+                                <p className="text-[10px] font-mono text-suno-neonBlue">AWAITING INPUT STREAM</p>
+                                <div className="w-12 h-0.5 bg-gray-800 rounded-full overflow-hidden">
+                                     <div className="h-full w-full bg-suno-neonBlue/50 animate-pulse"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {status === GenerationStatus.LOADING && (
-                <div className="h-full flex flex-col items-center justify-center">
-                    <div className="relative mb-12">
-                        <div className="absolute inset-0 bg-suno-neonBlue/30 blur-2xl rounded-full animate-pulse"></div>
-                        <div className="w-24 h-24 border-4 border-white/5 border-t-suno-neonBlue border-b-suno-neonPink rounded-full animate-spin"></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-2xl">🎵</span>
+                {status === GenerationStatus.LOADING && (
+                    <div className="h-full flex flex-col items-center justify-center">
+                        <div className="relative mb-8">
+                            <div className="absolute inset-0 bg-suno-neonBlue/30 blur-xl rounded-full animate-pulse"></div>
+                            <div className="w-16 h-16 border-2 border-white/5 border-t-suno-neonBlue border-b-suno-neonPink rounded-full animate-spin"></div>
                         </div>
+                        <h3 className="text-lg font-black text-white mb-1 tracking-tighter">PROCESSING</h3>
+                        <p className="text-[9px] text-suno-neonBlue font-mono uppercase tracking-widest text-center">Optimizing Structure...</p>
                     </div>
-                    <h3 className="text-xl font-black text-white mb-2 tracking-tighter">COMPOSING...</h3>
-                    <p className="text-[10px] text-suno-neonBlue mt-4 font-mono uppercase tracking-widest text-center">Applying V5 Tags &<br/>Structure Anchors</p>
-                </div>
-            )}
+                )}
 
-            {(status === GenerationStatus.SUCCESS && result) && (
-                <ResultCard song={result} />
-            )}
+                {(status === GenerationStatus.SUCCESS && result) && (
+                    <ResultCard song={result} />
+                )}
+            </div>
         </div>
 
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 py-6 text-center text-[10px] text-gray-700 border-t border-white/5 bg-black/80 backdrop-blur-md uppercase tracking-widest">
-        <div className="max-w-[1800px] mx-auto px-6 flex justify-between items-center">
-             <p>Sonic Architect V6.0 // Engineered for Audio</p>
-             <div className="flex items-center space-x-2">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                <p className="opacity-50">System Operational</p>
-             </div>
-        </div>
+      {/* Footer (Minimal) */}
+      <footer className="relative z-10 py-2 text-center text-[9px] text-gray-600 border-t border-white/5 bg-black/90 uppercase tracking-widest shrink-0">
+          Sonic Architect V6.1 // Suno V5 Optimized
       </footer>
     </div>
   );
