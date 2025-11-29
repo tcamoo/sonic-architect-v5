@@ -41,7 +41,7 @@ const SOLO_TECHNIQUES = [
 ];
 
 // 3. Instrument Presets for Quick Add
-// Expanded with Vocals and Emotions as requested
+// Expanded with Vocals, Emotions, and ROCK as requested
 const INSTRUMENT_PRESETS = {
   chinese: [
     { label: "古筝", value: "Guzheng" },
@@ -66,6 +66,18 @@ const INSTRUMENT_PRESETS = {
     { label: "鼓机", value: "Drum Machine" },
     { label: "电钢琴", value: "Rhodes" },
     { label: "放克贝斯", value: "Funky Bass" }
+  ],
+  rock: [
+    { label: "失真吉他", value: "Distorted Guitar" },
+    { label: "过载吉他", value: "Overdriven Guitar" },
+    { label: "强力和弦", value: "Power Chords" },
+    { label: "Pick贝斯", value: "Pick Bass" },
+    { label: "架子鼓", value: "Heavy Drum Kit" },
+    { label: "双踩", value: "Double Kick" },
+    { label: "电吉他", value: "Electric Guitar" },
+    { label: "哇音踏板", value: "Wah Pedal" },
+    { label: "回授", value: "Feedback" },
+    { label: "原声吉他", value: "Acoustic Guitar" }
   ],
   classical: [
     { label: "小提琴", value: "Violin" },
@@ -277,7 +289,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
   const [selectedId, setSelectedId] = useState<string | null>(blocks[0]?.id || null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [activeTab, setActiveTab] = useState<'styles' | 'phrases'>('styles');
-  const [activeInstTab, setActiveInstTab] = useState<'chinese' | 'pop' | 'classical' | 'vocals' | 'emotion'>('chinese');
+  const [activeInstTab, setActiveInstTab] = useState<'chinese' | 'pop' | 'rock' | 'classical' | 'vocals' | 'emotion'>('chinese');
   
   // Input Refs for Focus
   const styleInputRef = useRef<HTMLTextAreaElement>(null);
@@ -855,10 +867,11 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                         <span className="text-[9px] text-cyan-700 bg-cyan-900/10 px-1 rounded border border-cyan-900/30">Track 3</span>
                     </div>
 
-                    {/* NEW: Instrument Presets Tabs */}
-                    <div className="flex border border-[#333] rounded overflow-hidden mb-2 shrink-0">
+                    {/* NEW: Instrument Presets Tabs - Including ROCK */}
+                    <div className="flex border border-[#333] rounded overflow-hidden mb-2 shrink-0 flex-wrap">
                        <button type="button" onClick={() => setActiveInstTab('chinese')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'chinese' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>国风</button>
                        <button type="button" onClick={() => setActiveInstTab('pop')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'pop' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>流行</button>
+                       <button type="button" onClick={() => setActiveInstTab('rock')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'rock' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>摇滚</button>
                        <button type="button" onClick={() => setActiveInstTab('classical')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'classical' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>古典</button>
                        <button type="button" onClick={() => setActiveInstTab('vocals')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'vocals' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>人声</button>
                        <button type="button" onClick={() => setActiveInstTab('emotion')} className={`flex-1 py-1.5 text-[9px] font-bold uppercase transition-colors ${activeInstTab === 'emotion' ? 'bg-cyan-900/30 text-cyan-300' : 'bg-[#151515] text-gray-500 hover:bg-[#222]'}`}>情感</button>
