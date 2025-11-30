@@ -76,7 +76,7 @@ export const generateSunoPrompt = async (request: SongRequest): Promise<Generate
   const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
-    throw new Error("API configuration missing. Please ensure API_KEY is set in your Cloudflare/Vercel dashboard.");
+    throw new Error("API Key Missing! Please configure 'API_KEY' or 'VITE_GEMINI_API_KEY' in your Cloudflare/Vercel Environment Variables and REDEPLOY.");
   }
 
   const ai = new GoogleGenAI({ apiKey: apiKey });
