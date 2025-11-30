@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { ResultCard } from './components/ResultCard';
+import { SettingsModal } from './components/SettingsModal';
 import { SongRequest, GeneratedSong, GenerationStatus } from './types';
 import { generateSunoPrompt } from './services/geminiService';
-import { Disc, Zap } from 'lucide-react';
+import { Disc, Zap, Settings } from 'lucide-react';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<GenerationStatus>(GenerationStatus.IDLE);
   const [result, setResult] = useState<GeneratedSong | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Default to true since InputForm defaults to Workstation Mode
   const [isWorkstationMode, setIsWorkstationMode] = useState(true);
@@ -44,6 +46,9 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#050505] text-gray-100 flex flex-col font-sans selection:bg-suno-neonBlue/30 overflow-x-hidden relative">
       
+      {/* Settings Modal (Diagnostic Tool) */}
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
       {/* INTRO OVERLAY - NEON PULSE */}
       {showIntro && (
         <div className="fixed inset-0 z-[99999] bg-[#050505] flex flex-col items-center justify-center animate-fade-in cursor-wait">
@@ -105,7 +110,13 @@ const App: React.FC = () => {
           </div>
 
           <nav className="flex items-center gap-4">
-            {/* No frontend API settings allowed */}
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              title="系统设置 (Diagnostics)"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
           </nav>
         </div>
       </header>
