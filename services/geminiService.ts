@@ -40,28 +40,25 @@ const SYSTEM_INSTRUCTION = `
 你是一位世界顶级的音乐制作人和 Suno V5 提示词工程师 (Sonic Architect)。
 你的任务是将用户的编曲意图转化为 Suno V5 最能完美执行的 Prompt。
 
-**核心生成逻辑**：
+**任务模式 (TASK MODES):**
 
-1. **分析整体氛围 (Global Vibe Analysis)**:
-   - 扫描用户提供的所有 Structure Blocks。
-   - 提取共性的风格 (Style) 和乐器 (Instruments)。
-   - 确定一首歌曲的 "主基调" (例如：是悲伤的钢琴民谣，还是激进的摇滚)。
-   - 在生成的 Style Prompt 中，必须体现这个主基调，并使用 **首尾锚定**。
+**模式 A: 灵感创作 (Inspiration Mode)**
+- 用户只提供主题或心情。
+- **你的任务**: 扮演全能制作人，自动脑补出一首完整的歌曲。
+- **必须生成**: 
+  1. 完整的 **Style Prompt** (风格流派).
+  2. 完整的 **歌词与结构 (Lyrics)**。你必须自己创作歌词，并自动规划 [Intro], [Verse], [Chorus], [Bridge], [Outro] 结构。
+  3. 在每个段落标签中，必须加入自动脑补的乐器和情感指令。例如: **[Verse 1: Melancholic Piano, 30s]**。
 
-2. **构建风格提示词 (Style Prompt Construction)**:
-   - 格式：[Primary Genre], [Mood], [Global Instruments], [Vocal Style] ... [Primary Genre]
-   - 如果用户选择了 "大师预设" 或特定艺人风格，务必加入相关的专业关键词（如 "Dream Pop" for Faye Wong）。
-   - **V5 特性**: 尝试使用伪 JSON 格式增强理解，例如: "Genre: Pop, Vibe: Sad, Inst: Piano".
+**模式 B: 编曲工作台 (Arrangement Mode)**
+- 用户提供了详细的结构积木 (Blocks)。
+- **你的任务**: 严格执行用户的结构规划。
+- 提取用户定义的乐器、风格、时长，生成精准的 V5 标签。
 
-3. **构建歌词与结构 (Lyrics & Structure Construction)**:
-   - **严格遵守** 用户在工作台定义的结构顺序。
-   - **智能融合标签**: 将 [Type], [Duration], [Instruments] 融合为一个强大的段落头。
-     - 格式: **[SectionType: Mood/Vibe, Main Instrument]**
-     - 示例: **[Verse 1: Melancholic, Acoustic Guitar Arpeggio]**
-   - **歌词内容**:
-     - 如果用户提供了歌词，请按段落分配。
-     - 如果是纯音乐 (Instrumental)，请在段落内填写具体的演奏细节描述（如 "The guitar plays a sorrowful melody..."）。
-     - 必须在开头添加 **[BPM: {bpm}]** 标签。
+**通用规则**:
+1. **首尾锚定**: 在 Style Prompt 的开头和结尾重复核心风格词。
+2. **JSON 增强**: 尝试使用伪 JSON 格式增强 Style Prompt 的可读性 (如 "Genre: Pop, Vibe: Sad")。
+3. **中文语境**: 除非用户要求英文歌，否则默认生成中文歌词，但标签保留英文 (Suno 对英文标签理解更好)。
 
 **响应格式 (JSON)**:
 {
@@ -130,12 +127,21 @@ export const generateSunoPrompt = async (request: SongRequest): Promise<Generate
   let context = "";
   
   if (request.mode === 'inspiration') {
+    // UPDATED: Inspiration mode now asks for full structure generation
     context = `
-    TASK: Inspiration Mode.
-    Topic: ${request.topic}
-    Mood: ${request.mood}
-    Genre: ${request.genre}
+    TASK: Inspiration Mode (Auto-Arrangement).
+    User Topic/Theme: ${request.topic}
+    User Mood: ${request.mood}
+    User Genre: ${request.genre}
     Instrumental: ${request.instrumental}
+    
+    INSTRUCTION:
+    The user has only provided a vague idea. You must act as the Music Producer.
+    1. Create a catchy Song Title.
+    2. Compose original Lyrics based on the topic.
+    3. Structure the song fully (Intro -> Verse -> Chorus -> ... -> Outro).
+    4. For EACH section, add detailed V5 tags with Instruments and Vibe. 
+       Example: [Chorus: Powerful, Soaring Strings, 25s]
     `;
   } else if (request.useStructureBuilder && request.structureBlocks) {
     // Advanced Logic for Structure Builder
@@ -179,6 +185,9 @@ export const generateSunoPrompt = async (request: SongRequest): Promise<Generate
   const prompt = `
     Target Model: Suno V5
     
+    KNOWLEDGE BASE:
+    ${ARTIST_KNOWLEDGE}
+
     INPUT CONTEXT:
     ${context}
 
