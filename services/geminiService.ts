@@ -72,7 +72,14 @@ const SYSTEM_INSTRUCTION = `
 export const generateSunoPrompt = async (request: SongRequest): Promise<GeneratedSong> => {
   // STRICT SECURITY: Use process.env.API_KEY exclusively.
   // The API key must be provided via environment variables in the build/deployment environment.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // The 'vite.config.ts' define property ensures this is replaced by the actual string at build time.
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("API configuration missing. Please ensure API_KEY is set in your Cloudflare/Vercel dashboard.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: apiKey });
 
   let context = "";
   
