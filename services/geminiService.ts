@@ -69,6 +69,28 @@ const SYSTEM_INSTRUCTION = `
 }
 `;
 
+/**
+ * Validates the API key connection by making a minimal request.
+ * Used for system diagnostics.
+ */
+export const validateApiKey = async (): Promise<boolean> => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) return false;
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: apiKey });
+    // Minimal request to check validity
+    await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: "ping",
+    });
+    return true;
+  } catch (error) {
+    console.error("API Validation Failed:", error);
+    return false;
+  }
+};
+
 export const generateSunoPrompt = async (request: SongRequest): Promise<GeneratedSong> => {
   // STRICT SECURITY: Use process.env.API_KEY exclusively.
   // The API key must be provided via environment variables in the build/deployment environment.
