@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { StructureBlock } from '../types';
 import { Button } from './Button';
-import { Trash2, Plus, Music, Settings, ChevronLeft, ChevronRight, Maximize2, Minimize2, LayoutTemplate, Sparkles, Wand2, FileText, Quote, Mic2, Tag, Zap, Guitar, Drum, Piano, ChevronDown, ChevronUp, Clock, ZoomIn, ZoomOut, Search, BoomBox, MousePointerClick, Volume2 } from 'lucide-react';
+import { Trash2, Plus, Music, Settings, ChevronLeft, ChevronRight, Maximize2, Minimize2, LayoutTemplate, FileText, Quote, Mic2, Tag, Zap, ChevronDown, ChevronUp, Clock, ZoomIn, ZoomOut, BoomBox, MousePointerClick, Disc } from 'lucide-react';
 
 interface StructureEditorProps {
   blocks: StructureBlock[];
@@ -570,7 +570,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                <div className="h-20 border-b border-[#333] p-4 flex flex-col justify-between group hover:bg-[#2a2a2a] transition-colors bg-[#1b1b1b]">
                    <div className="flex items-center justify-between">
                      <span className="text-xs font-bold text-cyan-400">乐器 (Instruments)</span>
-                     <Piano className="w-3 h-3 text-cyan-400" />
+                     <BoomBox className="w-3 h-3 text-cyan-400" />
                   </div>
                   <div className="text-[9px] text-gray-500">双击积木配置乐器组合</div>
                </div>
@@ -811,7 +811,7 @@ export const StructureEditor: React.FC<StructureEditorProps> = ({ blocks, setBlo
                      <div className="bg-gradient-to-r from-suno-neonBlue/10 to-purple-900/20 p-2 rounded-lg border border-suno-neonBlue/30 shrink-0">
                         <div className="flex justify-between items-center mb-1">
                              <label className="text-[10px] font-bold text-suno-neonBlue uppercase flex items-center">
-                                <Guitar className="w-3 h-3 mr-1" /> 独奏/加花生成器
+                                <Zap className="w-3 h-3 mr-1" /> 独奏/加花生成器
                              </label>
                              <Button type="button" onClick={generateSolo} variant="neon" className="h-5 text-[9px] px-2 py-0">✨ 生成</Button>
                         </div>
