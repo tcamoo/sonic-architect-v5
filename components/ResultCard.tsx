@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Copy, Check, Music2, FileText, Info, FileAudio } from 'lucide-react';
 import { GeneratedSong } from '../types';
