@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SongRequest, StructureBlock } from '../types';
 import { Button } from './Button';
