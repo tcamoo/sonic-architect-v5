@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { SongRequest, GeneratedSong } from "../types";
 
@@ -70,64 +69,14 @@ const SYSTEM_INSTRUCTION = `
 }
 `;
 
-// Helper to safely check for API key without throwing context errors
-export const hasApiKey = (): boolean => {
-  const localKey = localStorage.getItem('gemini_api_key');
-  if (localKey && localKey.trim().length > 0) return true;
-  
-  // Safe check for process.env
-  try {
-    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-      return true;
-    }
-  } catch (e) {
-    // Ignore error if process is not defined
-  }
-  return false;
-};
-
-const getApiKey = (): string => {
-  const localKey = localStorage.getItem('gemini_api_key');
-  if (localKey && localKey.trim().length > 0) {
-    return localKey;
-  }
-  
-  try {
-     if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-       return process.env.API_KEY;
-     }
-  } catch (e) {
-      console.warn("Could not access process.env");
-  }
-  return "";
-};
-
-export const validateApiKey = async (key: string): Promise<boolean> => {
-  try {
-    const ai = new GoogleGenAI({ apiKey: key });
-    await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: "Hi",
-    });
-    return true;
-  } catch (e) {
-    console.error("API Key Validation Failed:", e);
-    return false;
-  }
-};
-
 export const generateSunoPrompt = async (request: SongRequest): Promise<GeneratedSong> => {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error("API Key 未配置。请点击右上角 '系统设置' 进行配置。");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  // STRICT SECURITY: Use process.env.API_KEY exclusively.
+  // The API key must be provided via environment variables in the build/deployment environment.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   let context = "";
   
   if (request.mode === 'inspiration') {
-    // UPDATED: Inspiration mode now asks for full structure generation
     context = `
     TASK: Inspiration Mode (Auto-Arrangement).
     User Topic/Theme: ${request.topic}
@@ -144,7 +93,6 @@ export const generateSunoPrompt = async (request: SongRequest): Promise<Generate
        Example: [Chorus: Powerful, Soaring Strings, 25s]
     `;
   } else if (request.useStructureBuilder && request.structureBlocks) {
-    // Advanced Logic for Structure Builder
     const blocksData = request.structureBlocks.map((b, index) => {
       return `
       Block ${index + 1}:
@@ -174,7 +122,6 @@ export const generateSunoPrompt = async (request: SongRequest): Promise<Generate
     Finally, write the "Lyrics" field with advanced V5 tags like [Verse 1: Sad Piano, 30s].
     `;
   } else {
-    // Text-only mode fallback
     context = `
     TASK: Standard Text Arrangement.
     Original Lyrics: ${request.originalLyrics}
