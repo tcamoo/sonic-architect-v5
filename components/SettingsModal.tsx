@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from './Button';
-import { Settings, X, ShieldCheck, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Settings, X, ShieldCheck, AlertTriangle, CheckCircle, RefreshCw, Save, Trash2, Key } from 'lucide-react';
 import { validateApiKey } from '../services/geminiService';
 
 interface SettingsModalProps {
@@ -10,27 +10,63 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+  const [inputKey, setInputKey] = useState('');
+  const [savedKey, setSavedKey] = useState('');
   const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Backend env key injected by Vite
+  const hasEnvKey = !!process.env.API_KEY;
+
+  useEffect(() => {
+    if (isOpen) {
+      const local = localStorage.getItem('gemini_api_key') || '';
+      setSavedKey(local);
+      setInputKey(local);
+      setTestStatus('idle');
+      setErrorMessage('');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const isConfigured = !!process.env.API_KEY;
+  const handleSave = () => {
+    if (!inputKey.trim()) {
+      handleClear();
+      return;
+    }
+    localStorage.setItem('gemini_api_key', inputKey.trim());
+    setSavedKey(inputKey.trim());
+    setTestStatus('idle');
+    // Optional: Auto-test on save
+    handleTestConnection(inputKey.trim());
+  };
 
-  const handleTestConnection = async () => {
+  const handleClear = () => {
+    localStorage.removeItem('gemini_api_key');
+    setSavedKey('');
+    setInputKey('');
+    setTestStatus('idle');
+  };
+
+  const handleTestConnection = async (keyToTest?: string) => {
     setTestStatus('loading');
     setErrorMessage('');
+    
+    // Test the specific key passed, or the saved one, or fallback to env
+    const key = keyToTest ?? savedKey ?? process.env.API_KEY;
+    
     try {
-      const isValid = await validateApiKey();
+      const isValid = await validateApiKey(key);
       if (isValid) {
         setTestStatus('success');
       } else {
         setTestStatus('error');
-        setErrorMessage('Validation failed. Key might be invalid.');
+        setErrorMessage('验证失败：API Key 无效或网络错误');
       }
     } catch (e: any) {
       setTestStatus('error');
-      setErrorMessage(e.message || 'Connection failed');
+      setErrorMessage(e.message || '连接失败');
     }
   };
 
@@ -49,61 +85,102 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <Settings className="w-6 h-6 text-suno-neonBlue" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">System Diagnostics</h2>
-            <p className="text-xs text-gray-400">Environment & Connection Check</p>
+            <h2 className="text-xl font-bold text-white">系统设置 (Settings)</h2>
+            <p className="text-xs text-gray-400">API Key 配置与连接检查</p>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="p-4 bg-black/50 border border-white/10 rounded-lg">
-             <div className="flex items-center justify-between mb-2">
-                 <span className="text-sm font-semibold text-gray-300">Environment Variable</span>
-                 {isConfigured ? (
-                     <span className="flex items-center text-green-400 text-xs font-bold">
-                        <ShieldCheck className="w-3 h-3 mr-1" /> Configured
-                     </span>
-                 ) : (
-                     <span className="flex items-center text-red-400 text-xs font-bold">
-                        <AlertTriangle className="w-3 h-3 mr-1" /> Missing
-                     </span>
-                 )}
-             </div>
-             <p className="text-xs text-gray-500">
-                {isConfigured 
-                  ? "API Key detected in process.env. The system is ready to communicate with Gemini."
-                  : "API Key NOT detected. Please configure 'API_KEY' in Cloudflare Pages settings and redeploy."}
-             </p>
+        <div className="space-y-6">
+          
+          {/* 1. Frontend Key Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-300 flex items-center justify-between">
+              <span className="flex items-center"><Key className="w-4 h-4 mr-2 text-suno-primary" /> 自定义 API Key (前端)</span>
+              {savedKey && <span className="text-[10px] bg-suno-primary/20 text-suno-primary px-2 py-0.5 rounded border border-suno-primary/30">当前使用中</span>}
+            </label>
+            <div className="relative">
+              <input 
+                type="password" 
+                value={inputKey}
+                onChange={(e) => setInputKey(e.target.value)}
+                placeholder="输入 Google Gemini API Key (sk-...)"
+                className="w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm text-white focus:border-suno-neonBlue focus:ring-1 focus:ring-suno-neonBlue transition-all pr-20"
+              />
+              {savedKey && (
+                <button 
+                  onClick={handleClear}
+                  className="absolute right-2 top-2 p-1.5 text-gray-500 hover:text-red-400 transition-colors"
+                  title="清除自定义 Key"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex justify-end">
+               <Button 
+                 onClick={handleSave} 
+                 variant="neon" 
+                 size="sm"
+                 className="text-xs h-8"
+                 disabled={!inputKey || inputKey === savedKey}
+               >
+                 <Save className="w-3 h-3 mr-1" /> 保存配置
+               </Button>
+            </div>
+            <p className="text-[10px] text-gray-500">
+              * 设置后将优先使用此 Key。数据仅保存在您的浏览器本地 (LocalStorage)。
+            </p>
           </div>
 
-          <div className="pt-2 border-t border-white/10">
+          <div className="h-px bg-white/10 my-2"></div>
+
+          {/* 2. Backend Status */}
+          <div className="p-3 bg-black/50 border border-white/10 rounded-lg flex items-center justify-between">
+             <div className="flex flex-col">
+                 <span className="text-sm font-semibold text-gray-300">默认环境配置 (后端)</span>
+                 <span className="text-[10px] text-gray-500">Cloudflare / Vercel Env</span>
+             </div>
+             {hasEnvKey ? (
+                 <div className="flex items-center text-green-400 text-xs font-bold bg-green-900/20 px-2 py-1 rounded border border-green-900/30">
+                    <ShieldCheck className="w-3 h-3 mr-1" /> 已配置 (Ready)
+                 </div>
+             ) : (
+                 <div className="flex items-center text-gray-500 text-xs font-bold bg-gray-800 px-2 py-1 rounded border border-gray-700">
+                    <AlertTriangle className="w-3 h-3 mr-1" /> 未检测到
+                 </div>
+             )}
+          </div>
+
+          {/* 3. Connection Test */}
+          <div className="pt-2">
              <div className="flex justify-between items-center mb-2">
-                 <span className="text-sm font-semibold text-gray-300">Connection Test</span>
-                 {testStatus === 'success' && <span className="text-green-400 text-xs flex items-center"><CheckCircle className="w-3 h-3 mr-1"/> Valid</span>}
-                 {testStatus === 'error' && <span className="text-red-400 text-xs flex items-center"><AlertTriangle className="w-3 h-3 mr-1"/> Failed</span>}
+                 <span className="text-sm font-semibold text-gray-300">连接测试 (Connection)</span>
+                 {testStatus === 'success' && <span className="text-green-400 text-xs flex items-center font-bold"><CheckCircle className="w-3 h-3 mr-1"/> 连接成功</span>}
+                 {testStatus === 'error' && <span className="text-red-400 text-xs flex items-center font-bold"><AlertTriangle className="w-3 h-3 mr-1"/> 连接失败</span>}
              </div>
              
              <Button 
-                onClick={handleTestConnection} 
-                disabled={!isConfigured || testStatus === 'loading'}
+                onClick={() => handleTestConnection()} 
+                disabled={testStatus === 'loading'}
                 variant="outline"
                 size="sm"
-                className="w-full text-xs"
+                className="w-full text-xs h-9 border-white/20 hover:bg-white/5"
              >
                 {testStatus === 'loading' ? (
-                    <span className="flex items-center justify-center"><RefreshCw className="w-3 h-3 mr-2 animate-spin"/> Pinging API...</span>
-                ) : "Test API Connection"}
+                    <span className="flex items-center justify-center"><RefreshCw className="w-3 h-3 mr-2 animate-spin"/> 正在测试...</span>
+                ) : "测试 API 连接 (Test Ping)"}
              </Button>
              
              {testStatus === 'error' && (
                  <p className="text-[10px] text-red-400 mt-2 bg-red-900/10 p-2 rounded border border-red-900/30">
-                     Error: {errorMessage}. Check your Cloudflare environment variables.
+                     错误: {errorMessage}。请检查 API Key 是否有效或网络是否通畅。
                  </p>
              )}
           </div>
 
           <div className="flex justify-end pt-2">
-             <Button variant="ghost" onClick={onClose} className="text-xs h-9">
-                Close
+             <Button variant="ghost" onClick={onClose} className="text-xs h-8 text-gray-400 hover:text-white">
+                关闭
              </Button>
           </div>
         </div>
