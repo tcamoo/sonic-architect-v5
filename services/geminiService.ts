@@ -70,11 +70,29 @@ const SYSTEM_INSTRUCTION = `
 `;
 
 /**
- * Validates the API key connection by making a minimal request.
- * Used for system diagnostics.
+ * Retrieves the effective API Key.
+ * Priority: 
+ * 1. LocalStorage (User entered)
+ * 2. process.env.API_KEY (Build injected from Cloudflare/Vercel)
  */
-export const validateApiKey = async (): Promise<boolean> => {
-  const apiKey = process.env.API_KEY;
+export const getEffectiveApiKey = (): string => {
+  if (typeof window !== 'undefined') {
+    const localKey = localStorage.getItem('gemini_api_key');
+    if (localKey && localKey.trim().length > 0) {
+      return localKey.trim();
+    }
+  }
+  // Vite injects env vars via define into process.env at build time
+  return process.env.API_KEY || "";
+};
+
+/**
+ * Validates the API key connection by making a minimal request.
+ * Can test a specific key, or defaults to the effective key.
+ */
+export const validateApiKey = async (specificKey?: string): Promise<boolean> => {
+  const apiKey = specificKey || getEffectiveApiKey();
+  
   if (!apiKey) return false;
 
   try {
@@ -92,13 +110,10 @@ export const validateApiKey = async (): Promise<boolean> => {
 };
 
 export const generateSunoPrompt = async (request: SongRequest): Promise<GeneratedSong> => {
-  // STRICT SECURITY: Use process.env.API_KEY exclusively.
-  // The API key must be provided via environment variables in the build/deployment environment.
-  // The 'vite.config.ts' define property ensures this is replaced by the actual string at build time.
-  const apiKey = process.env.API_KEY;
+  const apiKey = getEffectiveApiKey();
 
   if (!apiKey) {
-    throw new Error("API Key Missing! Please configure 'API_KEY' or 'VITE_GEMINI_API_KEY' in your Cloudflare/Vercel Environment Variables and REDEPLOY.");
+    throw new Error("未检测到 API Key！请点击右上角设置图标配置您的 Key，或联系管理员在后台配置。");
   }
 
   const ai = new GoogleGenAI({ apiKey: apiKey });
