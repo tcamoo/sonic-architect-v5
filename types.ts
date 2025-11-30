@@ -1,4 +1,3 @@
-
 export interface GeneratedSong {
   title: string;
   stylePrompt: string; // The final string to paste into Suno
