@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
   // Prioritize VITE_GEMINI_API_KEY, then API_KEY, then fallback to process.env
   const apiKey = env.VITE_GEMINI_API_KEY || env.API_KEY || process.env.API_KEY;
 
+  console.log(`[Vite Build] Injecting API Key: ${apiKey ? 'Yes (Hidden)' : 'No'}`);
+
   return {
     plugins: [react()],
     define: {
