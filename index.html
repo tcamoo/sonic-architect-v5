@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Sonic Architect V5 - AI Music Workbench. Optimized for Cloudflare deployment.">
-    <title>Sonic Architect - AI Music Workstation</title>
+    <meta name="description" content="Sonic Architect V5 - SUNO编曲大师. AI Music Workbench.">
+    <title>SUNO编曲大师 - Sonic Architect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
@@ -31,6 +31,7 @@
               'spin-slow': 'spin 8s linear infinite',
               'pulse-ring': 'pulse-ring 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite',
               'fade-in': 'fadeIn 0.8s ease-out forwards',
+              'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
             },
             keyframes: {
               float: {
@@ -46,6 +47,10 @@
               fadeIn: {
                 '0%': { opacity: '0', transform: 'scale(0.95)' },
                 '100%': { opacity: '1', transform: 'scale(1)' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
               }
             }
           },
@@ -74,6 +79,12 @@
       .text-shadow-neon {
         text-shadow: 0 0 10px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
       }
+      .glass-header {
+        background: rgba(5, 5, 5, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
     </style>
   <script type="importmap">
 {
@@ -87,10 +98,8 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>
