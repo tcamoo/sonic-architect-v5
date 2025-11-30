@@ -1,9 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from './Button';
-import { Settings, X, Check, AlertCircle, Key, ShieldCheck } from 'lucide-react';
-import { validateApiKey } from '../services/geminiService';
+import { Settings, X, ShieldCheck } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,28 +9,6 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
-  const [apiKey, setApiKey] = useState('');
-  const [status, setStatus] = useState<'idle' | 'testing' | 'valid' | 'invalid'>('idle');
-
-  useEffect(() => {
-    if (isOpen) {
-      const storedKey = localStorage.getItem('gemini_api_key') || '';
-      setApiKey(storedKey);
-      setStatus('idle');
-    }
-  }, [isOpen]);
-
-  const handleSave = () => {
-    localStorage.setItem('gemini_api_key', apiKey.trim());
-    onClose();
-  };
-
-  const handleTest = async () => {
-    setStatus('testing');
-    const isValid = await validateApiKey(apiKey.trim());
-    setStatus(isValid ? 'valid' : 'invalid');
-  };
-
   if (!isOpen) return null;
 
   return createPortal(
@@ -50,47 +26,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <Settings className="w-6 h-6 text-suno-neonBlue" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">系统设置</h2>
-            <p className="text-xs text-gray-400">配置您的 API 连接参数</p>
+            <h2 className="text-xl font-bold text-white">System Settings</h2>
+            <p className="text-xs text-gray-400">Environment Configuration</p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-300 flex items-center">
-              <Key className="w-4 h-4 mr-2 text-suno-primary" />
-              Gemini API Key
-            </label>
-            <input 
-              type="password" 
-              value={apiKey}
-              onChange={(e) => {
-                setApiKey(e.target.value);
-                setStatus('idle');
-              }}
-              placeholder="AIzaSy..."
-              className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-suno-neonBlue focus:ring-1 focus:ring-suno-neonBlue outline-none font-mono text-sm"
-            />
-            <p className="text-[10px] text-gray-500">
-              您的 Key 仅存储在本地浏览器中，绝不会上传到我们的服务器。
-            </p>
+          <div className="p-4 bg-black/50 border border-white/10 rounded-lg">
+             <div className="flex items-center text-green-400 text-sm mb-2">
+                <ShieldCheck className="w-4 h-4 mr-2" />
+                API Key Configured
+             </div>
+             <p className="text-xs text-gray-500">
+                The API key is securely provided via environment variables. No manual configuration is required.
+             </p>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-             <div className="flex items-center text-xs">
-                {status === 'testing' && <span className="text-yellow-500 flex items-center animate-pulse"><ShieldCheck className="w-3 h-3 mr-1" /> 测试连接中...</span>}
-                {status === 'valid' && <span className="text-green-500 flex items-center"><Check className="w-3 h-3 mr-1" /> 连接成功</span>}
-                {status === 'invalid' && <span className="text-red-500 flex items-center"><AlertCircle className="w-3 h-3 mr-1" /> 连接失败，请检查 Key</span>}
-             </div>
-             
-             <div className="flex space-x-2">
-                <Button variant="ghost" onClick={handleTest} disabled={!apiKey} className="text-xs h-9">
-                   测试连接
-                </Button>
-                <Button variant="neon" onClick={handleSave} className="text-xs h-9">
-                   保存配置
-                </Button>
-             </div>
+          <div className="flex justify-end pt-2">
+             <Button variant="ghost" onClick={onClose} className="text-xs h-9">
+                Close
+             </Button>
           </div>
         </div>
       </div>
