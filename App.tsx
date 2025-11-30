@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { ResultCard } from './components/ResultCard';
-import { SettingsModal } from './components/SettingsModal';
 import { SongRequest, GeneratedSong, GenerationStatus } from './types';
-import { generateSunoPrompt, hasApiKey } from './services/geminiService';
-import { Disc, Settings, Activity, Zap } from 'lucide-react';
+import { generateSunoPrompt } from './services/geminiService';
+import { Disc, Zap } from 'lucide-react';
 
 const App: React.FC = () => {
   const [status, setStatus] = useState<GenerationStatus>(GenerationStatus.IDLE);
@@ -14,7 +12,6 @@ const App: React.FC = () => {
   
   // Default to true since InputForm defaults to Workstation Mode
   const [isWorkstationMode, setIsWorkstationMode] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
   
   // Intro Animation State
   const [showIntro, setShowIntro] = useState(true);
@@ -28,15 +25,6 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    // 2. After Intro, check for API Key. If missing, prompt user.
-    if (!showIntro) {
-      if (!hasApiKey()) {
-        setShowSettings(true);
-      }
-    }
-  }, [showIntro]);
-
   const handleGenerate = async (request: SongRequest) => {
     setStatus(GenerationStatus.LOADING);
     setError(null);
@@ -48,7 +36,7 @@ const App: React.FC = () => {
       setStatus(GenerationStatus.SUCCESS);
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "出错了。请检查您的 API Key 或稍后重试。");
+      setError(err.message || "出错了。请检查网络或稍后重试。");
       setStatus(GenerationStatus.ERROR);
     }
   };
@@ -85,9 +73,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Settings Modal */}
-      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
-
       {/* Background Ambience */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-suno-neonBlue/5 blur-[150px]" />
@@ -103,7 +88,7 @@ const App: React.FC = () => {
       <header className="relative z-10 w-full glass-header shadow-md h-16 shrink-0">
         <div className="max-w-[1920px] mx-auto px-6 h-full flex items-center justify-between">
           
-          {/* Logo Section - RESTORED SIZE */}
+          {/* Logo Section */}
           <div className="flex items-center space-x-4 group cursor-pointer hover:opacity-90 transition-opacity">
             <div className="relative">
                 <div className="absolute inset-0 bg-suno-neonBlue rounded-full blur-md opacity-50 animate-pulse"></div>
@@ -120,13 +105,7 @@ const App: React.FC = () => {
           </div>
 
           <nav className="flex items-center gap-4">
-             <button 
-              onClick={() => setShowSettings(true)}
-              className="flex items-center text-[10px] font-bold text-gray-400 hover:text-white transition-all border border-white/10 px-3 py-1.5 rounded-full hover:bg-white/5 hover:border-suno-neonBlue/50"
-            >
-              <Settings className="w-3 h-3 ml-1.5 text-suno-primary" />
-              <span className="ml-1.5 mr-1">系统设置</span>
-            </button>
+            {/* No frontend API settings allowed */}
           </nav>
         </div>
       </header>
@@ -135,7 +114,6 @@ const App: React.FC = () => {
       <main className="relative z-10 flex-grow max-w-[1920px] mx-auto w-full px-4 sm:px-6 py-4 flex flex-col lg:flex-row gap-4 h-[calc(100vh-4rem)] overflow-hidden">
         
         {/* Left Column (Workstation) */}
-        {/* 80% Width in Workstation Mode */}
         <div className={`h-full flex flex-col ${isWorkstationMode ? 'lg:w-[80%]' : 'lg:w-[480px] lg:flex-shrink-0'} transition-all duration-500 ease-in-out`}>
             
             {/* Elegant Slogan Bar */}
@@ -163,11 +141,10 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Column (Result & Visualization) */}
-        {/* 20% Width in Workstation Mode */}
         <div className={`${isWorkstationMode ? 'lg:w-[20%] min-w-[300px]' : 'flex-1'} lg:pl-4 lg:border-l border-white/5 h-full flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}>
             
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-                {/* Idle State - Holographic Workstation Placeholder - RESTORED & ENHANCED */}
+                {/* Idle State */}
                 {status === GenerationStatus.IDLE && (
                     <div className="h-full flex flex-col items-center justify-center relative opacity-80 hover:opacity-100 transition-opacity duration-500">
                         {/* Holographic Circle */}
