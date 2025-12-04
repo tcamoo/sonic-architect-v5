@@ -1,12 +1,12 @@
 
 # 🎵 SONIC ARCHITECT V5 - SUNO 编曲大师
 
-![Sonic Architect V5 Workstation](https://file.notion.so/f/f/870275c6-2917-4835-8594-540702d75924/09c748eb-a1d2-436f-b27b-2401f11e92d6/image.png?id=d8904791-0361-464a-bf56-06834468f029&table=block&spaceId=870275c6-2917-4835-8594-540702d75924&expirationTimestamp=1741255200&signature=g7m0vE_zHj2a2j73Q8_rR14n_sZpW-v2C0v_v3N_v3s&downloadName=image.png)
+![Sonic Architect V5 Workstation]([https://file.notion.so/f/f/870275c6-2917-4835-8594-540702d75924/09c748eb-a1d2-436f-b27b-2401f11e92d6/image.png?id=d8904791-0361-464a-bf56-06834468f029&table=block&spaceId=870275c6-2917-4835-8594-540702d75924&expirationTimestamp=1741255200&signature=g7m0vE_zHj2a2j73Q8_rR14n_sZpW-v2C0v_v3N_v3s&downloadName=image.png](https://ft.puu.me/api/cfile/AgACAgEAAyEGAAStzBFnAAMUaTDyuBhEoa4dImAAAcuvey9JPR8QAAIcC2sbX5SIRfe6PjB_TbpqAQADAgADdwADNgQ))
 
 **Sonic Architect (声波架构师)** 是专为 [Suno.com](https://suno.com) 最新的 **V5 模型** 打造的高级 AI 音乐编曲工作台。
 
 不同于传统的“抽卡式”生成，Sonic Architect 引入了 **DAW（数字音频工作站）** 的可视化操作逻辑，让您像搭积木一样设计歌曲的结构、乐器、时长和情感，精准控制 AI 的生成结果。
-                                                                              演示地址[演示地址](https://suno.oogg.me)需要自行配置API
+                                                                              演示地址[演示地址](https://suno.puu.me)需要自行配置API
 
 ---
 
